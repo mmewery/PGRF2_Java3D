@@ -22,6 +22,8 @@ public class Controller3D {
     // Solids
     private Solid axisX, axisY, axisZ, arrow, cube;
 
+    private int oldX, oldY;
+
     private Camera camera;
     private Mat4 proj;
 
@@ -62,6 +64,34 @@ public class Controller3D {
     }
 
     private void initListeners() {
+        panel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                oldX = e.getX();
+                oldY = e.getY();
+            }
+        });
+
+        panel.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+
+                int dx = oldX - e.getX();
+                int dy = oldY - e.getY();
+
+                oldX = e.getX();
+                oldY = e.getY();
+
+                double azimuthChange = ((double) dx / panel.getWidth()) * Math.PI;
+                double zenithChange = ((double) dy / panel.getHeight()) * Math.PI;
+
+                camera = camera.addAzimuth(azimuthChange)
+                        .addZenith(zenithChange);
+
+                drawScene();
+            }
+        });
+
         panel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
