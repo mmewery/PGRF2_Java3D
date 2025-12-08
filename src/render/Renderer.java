@@ -70,7 +70,9 @@ public class Renderer {
     }
 
     public void renderSolids(List<Solid> solids) {
-        // TODO: implementovat
+        for(Solid solid : solids) {
+            renderSolid(solid);
+        }
     }
 
     public void setView(Mat4 view) {

@@ -37,4 +37,8 @@ public abstract class Solid {
     public Col getColor() {
         return color;
     }
+
+    public void setColor(Col color) {
+        this.color = color;
+    }
 }
