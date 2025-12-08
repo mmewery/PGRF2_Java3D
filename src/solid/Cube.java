@@ -8,15 +8,15 @@ import java.awt.*;
 public class Cube extends Solid {
     public Cube() {
         color = new Col(0x00ffff);
-        vb.add(new Point3D(0.2, 0.2, 0.2)); // v0
-        vb.add(new Point3D(1.2, 0.2, 0.2)); // v1
-        vb.add(new Point3D(1.2, 1.2, 0.2)); // v2
-        vb.add(new Point3D(0.2, 1.2, 0.2)); // v3
+        vb.add(new Point3D(0.2, 0.2, 0)); // v0
+        vb.add(new Point3D(1.2, 0.2, 0)); // v1
+        vb.add(new Point3D(1.2, 1.2, 0)); // v2
+        vb.add(new Point3D(0.2, 1.2, 0)); // v3
 
-        vb.add(new Point3D(0.2, 0.2, 1.2)); // v4
-        vb.add(new Point3D(1.2, 0.2, 1.2)); // v5
-        vb.add(new Point3D(1.2, 1.2, 1.2)); // v6
-        vb.add(new Point3D(0.2, 1.2, 1.2)); // v7
+        vb.add(new Point3D(0.2, 0.2, 1)); // v4
+        vb.add(new Point3D(1.2, 0.2, 1)); // v5
+        vb.add(new Point3D(1.2, 1.2, 1)); // v6
+        vb.add(new Point3D(0.2, 1.2, 1)); // v7
 
 
         addIndices(0, 1);

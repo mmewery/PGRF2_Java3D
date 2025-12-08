@@ -20,7 +20,7 @@ public class Controller3D {
     // Renderers
     private Renderer renderer;
     // Solids
-    private Solid axisX, axisY, axisZ, arrow, cube;
+    private Solid axisX, axisY, axisZ, arrow, cube, cone;
 
     private int oldX, oldY;
 
@@ -58,6 +58,7 @@ public class Controller3D {
         axisZ = new AxisZ();
         arrow = new Arrow();
         cube = new Cube();
+        cone = new Cone();
         initListeners();
 
         drawScene();
@@ -153,6 +154,8 @@ public class Controller3D {
         renderer.renderSolid(arrow);
 
         renderer.renderSolid(cube);
+
+        renderer.renderSolid(cone);
 
         panel.repaint();
     }
