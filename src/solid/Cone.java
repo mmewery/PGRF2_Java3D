@@ -3,27 +3,28 @@ package solid;
 import transforms.Point3D;
 
 public class Cone extends Solid {
-    double height = 1.2;
-    double radius = 0.5;
-    int segments = 16;
     public Cone() {
-        vb.add(new Point3D(2, radius, height));
+        double height = 1.5;
+        double radius = 0.5;
+        int segments = 20;
 
-        vb.add(new Point3D(2, radius, 0));
+        vb.add(new Point3D(0, 0, height));
+
+        vb.add(new Point3D(0, 0, 0));
 
         for (int i = 0; i < segments; i++) {
             double angle = 2.0 * Math.PI * i / segments;
             double x = radius * Math.cos(angle);
             double y = radius * Math.sin(angle);
-            vb.add(new Point3D(x + 2, y + radius, 0));
+            vb.add(new Point3D(x, y, 0));
         }
 
+        int baseStartIndex = 2;
         for (int i = 0; i < segments; i++) {
-            int current = 2 + i;
-            int next = 2 + (i + 1) % segments;
+            int current = baseStartIndex + i;
+            int next = baseStartIndex + (i + 1) % segments;
 
             addIndices(0, current);
-
             addIndices(current, next);
         }
     }

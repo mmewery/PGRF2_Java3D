@@ -58,20 +58,26 @@ public class Controller3D {
         );
 
         //curve initial points
-        Point3D p1 = new Point3D(3.8,1,0);
-        Point3D p2 = new Point3D(4,0,0.3);
-        Point3D p3 = new Point3D(4.2,0,0.6);
-        Point3D p4 = new Point3D(4.4,1,1);
+        Point3D p1 = new Point3D(-0.2,1,0);
+        Point3D p2 = new Point3D(0.0,0,0.3);
+        Point3D p3 = new Point3D(0.2,0,0.6);
+        Point3D p4 = new Point3D(0.4,1,1);
 
         // Init solids
         axisX = new AxisX();
         axisY = new AxisY();
         axisZ = new AxisZ();
+
         cube = new Cube();
+        cube.setModel(new Mat4Transl(-0.7, 0.5, 0.5));
         solids.add(cube);
+
         cone = new Cone();
+        cone.setModel(new Mat4Transl(0.7, 0.5, 0));
         solids.add(cone);
+
         curve = new Curve(Cubic.BEZIER, p1, p2, p3, p4);
+        curve.setModel(new Mat4Transl(2, 0, 0));
         solids.add(curve);
 
         initListeners();
@@ -140,19 +146,19 @@ public class Controller3D {
                 //rotace
                 double angle = Math.toRadians(5);
                 if (e.getKeyCode() == KeyEvent.VK_X)
-                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4RotX(angle)));
+                    solids.get(activeSolidIndex).setModel(new Mat4RotX(angle).mul(solids.get(activeSolidIndex).getModel()));
                 if (e.getKeyCode() == KeyEvent.VK_Y)
-                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4RotY(angle)));
+                    solids.get(activeSolidIndex).setModel(new Mat4RotY(angle).mul(solids.get(activeSolidIndex).getModel()));
                 if (e.getKeyCode() == KeyEvent.VK_Z)
-                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4RotZ(angle)));
+                    solids.get(activeSolidIndex).setModel(new Mat4RotZ(angle).mul(solids.get(activeSolidIndex).getModel()));
 
                 //scale
-                double scaleUp = 1;
-                double scaleDown = 1;
+                double scaleUp = 1.2;
+                double scaleDown = 0.8;
                 if (e.getKeyCode() == KeyEvent.VK_CLOSE_BRACKET)
-                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Scale(scaleUp)));
+                    solids.get(activeSolidIndex).setModel(new Mat4Scale(scaleUp).mul(solids.get(activeSolidIndex).getModel()));
                 if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET)
-                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Scale(scaleDown)));
+                    solids.get(activeSolidIndex).setModel(new Mat4Scale(scaleDown).mul(solids.get(activeSolidIndex).getModel()));
 
                 if (e.getKeyCode() == KeyEvent.VK_P) {
                     proj = new Mat4PerspRH(
