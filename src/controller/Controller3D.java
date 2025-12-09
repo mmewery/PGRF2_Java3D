@@ -147,8 +147,8 @@ public class Controller3D {
                     solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4RotZ(angle)));
 
                 //scale
-                double scaleUp = 1;
-                double scaleDown = 1;
+                double scaleUp = 1.2;
+                double scaleDown = 0.8;
                 if (e.getKeyCode() == KeyEvent.VK_CLOSE_BRACKET)
                     solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Scale(scaleUp)));
                 if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET)
