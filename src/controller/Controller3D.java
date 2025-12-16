@@ -24,6 +24,7 @@ public class Controller3D {
     // Solids
     private List<Solid> solids = new ArrayList<>();
     Solid axisX, axisY, axisZ, cube, cone, curve;
+    private Point3D p1, p2, p3, p4;
 
     private int activeSolidIndex = 0;
 
@@ -31,6 +32,15 @@ public class Controller3D {
 
     private Camera camera;
     private Mat4 proj;
+
+    private enum CubicMode {BEZIER, FERGUSON, COONS}
+
+    private List<CubicMode> cubicModes = new ArrayList<>();
+
+    private int cubicMode = 0;
+
+    private boolean editPointMode = false;
+    private int activePointIndex = 0;
 
     public Controller3D(Panel panel) {
         this.panel = panel;
@@ -58,10 +68,10 @@ public class Controller3D {
         );
 
         //curve initial points
-        Point3D p1 = new Point3D(-0.2,1,0);
-        Point3D p2 = new Point3D(0.0,0,0.3);
-        Point3D p3 = new Point3D(0.2,0,0.6);
-        Point3D p4 = new Point3D(0.4,1,1);
+        p1 = new Point3D(-0.2,1,0);
+        p2 = new Point3D(0.0,0,0.3);
+        p3 = new Point3D(0.2,0,0.6);
+        p4 = new Point3D(0.4,1,1);
 
         // Init solids
         axisX = new AxisX();
@@ -79,6 +89,10 @@ public class Controller3D {
         curve = new Curve(Cubic.BEZIER, p1, p2, p3, p4);
         curve.setModel(new Mat4Transl(2, 0, 0));
         solids.add(curve);
+
+        cubicModes.add(CubicMode.BEZIER);
+        cubicModes.add(CubicMode.FERGUSON);
+        cubicModes.add(CubicMode.COONS);
 
         initListeners();
 
@@ -130,17 +144,17 @@ public class Controller3D {
 
                 //translace
                 double step = 0.2;
-                if (e.getKeyCode() == KeyEvent.VK_LEFT)
+                if (e.getKeyCode() == KeyEvent.VK_LEFT && !editPointMode)
                     solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(-step, 0, 0)));
-                if (e.getKeyCode() == KeyEvent.VK_RIGHT)
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT && !editPointMode)
                     solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(step, 0, 0)));
-                if (e.getKeyCode() == KeyEvent.VK_UP)
+                if (e.getKeyCode() == KeyEvent.VK_UP && !editPointMode)
                     solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, step, 0)));
-                if (e.getKeyCode() == KeyEvent.VK_DOWN)
+                if (e.getKeyCode() == KeyEvent.VK_DOWN && !editPointMode)
                     solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, -step, 0)));
-                if (e.getKeyCode() == KeyEvent.VK_PAGE_UP)
+                if (e.getKeyCode() == KeyEvent.VK_PAGE_UP && !editPointMode)
                     solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, step)));
-                if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN)
+                if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN && !editPointMode)
                     solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, -step)));
 
                 //rotace
@@ -181,6 +195,69 @@ public class Controller3D {
                 if(e.getKeyCode() == KeyEvent.VK_D)
                     camera = camera.right(0.5);
 
+                if (e.getKeyCode() == KeyEvent.VK_M) {
+
+                    cubicMode++;
+                    if (cubicMode >= cubicModes.size()) {
+                        cubicMode = 0;
+                    }
+
+                    CubicMode mode = cubicModes.get(cubicMode);
+                    panel.setCubicModeText(mode.toString());
+
+                    solids.remove(curve);
+
+                    Mat4 typeMatrix = switch (mode) {
+                        case FERGUSON -> Cubic.FERGUSON;
+                        case COONS -> Cubic.COONS;
+                        default -> Cubic.BEZIER;
+                    };
+
+                    curve = new Curve(typeMatrix, p1, p2, p3, p4);
+                    curve.setModel(new Mat4Transl(2, 0, 0));
+                    solids.add(curve);
+                }
+
+                if (e.getKeyCode() == KeyEvent.VK_E) {
+                    editPointMode = !editPointMode;
+                    panel.setEditModeText(String.valueOf(editPointMode).toUpperCase());
+                }
+
+                if (editPointMode) {
+                    if (e.getKeyCode() == KeyEvent.VK_1) activePointIndex = 0;
+                    if (e.getKeyCode() == KeyEvent.VK_2) activePointIndex = 1;
+                    if (e.getKeyCode() == KeyEvent.VK_3) activePointIndex = 2;
+                    if (e.getKeyCode() == KeyEvent.VK_4) activePointIndex = 3;
+
+                    Point3D activePoint = switch (activePointIndex) {
+                        case 1 -> p2;
+                        case 2 -> p3;
+                        case 3 -> p4;
+                        default -> p1;
+                    };
+
+                    if (e.getKeyCode() == KeyEvent.VK_LEFT)  activePoint = activePoint.add(new Point3D(-0.1, 0, 0));
+                    if (e.getKeyCode() == KeyEvent.VK_RIGHT) activePoint = activePoint.add(new Point3D(0.1, 0, 0));
+                    if (e.getKeyCode() == KeyEvent.VK_UP)    activePoint = activePoint.add(new Point3D(0, 0.1, 0));
+                    if (e.getKeyCode() == KeyEvent.VK_DOWN)  activePoint = activePoint.add(new Point3D(0, -0.1, 0));
+                    if (e.getKeyCode() == KeyEvent.VK_PAGE_UP)   activePoint = activePoint.add(new Point3D(0, 0, step));
+                    if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) activePoint = activePoint.add(new Point3D(0, 0, -step));
+
+                    switch (activePointIndex) {
+                        case 0 -> p1 = activePoint;
+                        case 1 -> p2 = activePoint;
+                        case 2 -> p3 = activePoint;
+                        case 3 -> p4 = activePoint;
+                    }
+
+                    updateCurve();
+
+                   panel.setEditModeText(String.valueOf(editPointMode).toUpperCase() + " P" + (activePointIndex + 1) + " " + activePoint.toString());
+
+                   drawScene();
+                   return;
+                }
+
                 drawScene();
             }
         });
@@ -199,6 +276,24 @@ public class Controller3D {
         renderer.renderSolids(solids);
 
         panel.repaint();
+    }
+
+    private void updateCurve() {
+        Mat4 oldModel = curve.getModel();
+        solids.remove(curve);
+
+        Controller3D.CubicMode mode = cubicModes.get(cubicMode);
+        Mat4 typeMatrix = switch (mode) {
+            case FERGUSON -> Cubic.FERGUSON;
+            case COONS -> Cubic.COONS;
+            default -> Cubic.BEZIER;
+        };
+
+        curve = new Curve(typeMatrix, p1, p2, p3, p4);
+
+        curve.setModel(oldModel);
+
+        solids.add(curve);
     }
 
 
