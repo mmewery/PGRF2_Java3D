@@ -39,6 +39,8 @@ public class Controller3D {
 
     private int cubicMode = 0;
 
+    private int curveSteps;
+
     private boolean editPointMode = false;
     private int activePointIndex = 0;
 
@@ -86,7 +88,8 @@ public class Controller3D {
         cone.setModel(new Mat4Transl(0.7, 0.5, 0));
         solids.add(cone);
 
-        curve = new Curve(Cubic.BEZIER, p1, p2, p3, p4);
+        curveSteps = 20;
+        curve = new Curve(Cubic.BEZIER, p1, p2, p3, p4, curveSteps);
         curve.setModel(new Mat4Transl(2, 0, 0));
         solids.add(curve);
 
@@ -100,6 +103,7 @@ public class Controller3D {
     }
 
     private void initListeners() {
+        //rozhlizeni mysi
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -107,11 +111,9 @@ public class Controller3D {
                 oldY = e.getY();
             }
         });
-
         panel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-
                 int dx = oldX - e.getX();
                 int dy = oldY - e.getY();
 
@@ -123,7 +125,6 @@ public class Controller3D {
 
                 camera = camera.addAzimuth(azimuthChange)
                         .addZenith(zenithChange);
-
                 drawScene();
             }
         });
@@ -131,6 +132,7 @@ public class Controller3D {
         panel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                //aktivni teleso
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                     activeSolidIndex++;
                     if (activeSolidIndex >= solids.size()) {
@@ -174,18 +176,19 @@ public class Controller3D {
                 if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET)
                     solids.get(activeSolidIndex).setModel(new Mat4Scale(scaleDown).mul(solids.get(activeSolidIndex).getModel()));
 
+                //perspective
                 if (e.getKeyCode() == KeyEvent.VK_P) {
                     proj = new Mat4PerspRH(
                             Math.toRadians(90),
                             panel.getRaster().getHeight() / (double) panel.getRaster().getWidth(), 0.1,100);
                 }
-
+                //ortogonalni
                 if (e.getKeyCode() == KeyEvent.VK_O) {
                     double aspect = (double) panel.getRaster().getWidth() / panel.getRaster().getHeight();
 
                     proj = new Mat4OrthoRH(5 * aspect, 5,0.1,200);
                 }
-
+                // camera wsad
                 if(e.getKeyCode() == KeyEvent.VK_W)
                     camera = camera.forward(0.5);
                 if(e.getKeyCode() == KeyEvent.VK_A)
@@ -195,6 +198,7 @@ public class Controller3D {
                 if(e.getKeyCode() == KeyEvent.VK_D)
                     camera = camera.right(0.5);
 
+                //cubic modes
                 if (e.getKeyCode() == KeyEvent.VK_M) {
 
                     cubicMode++;
@@ -213,16 +217,27 @@ public class Controller3D {
                         default -> Cubic.BEZIER;
                     };
 
-                    curve = new Curve(typeMatrix, p1, p2, p3, p4);
+                    curve = new Curve(typeMatrix, p1, p2, p3, p4, curveSteps);
                     curve.setModel(new Mat4Transl(2, 0, 0));
                     solids.add(curve);
                 }
 
+                //presnost krivky
+                if (e.getKeyCode() == KeyEvent.VK_F) {
+                    if (curveSteps > 3) {
+                        curveSteps--;
+                        updateCurve();
+                    }
+                }
+                if (e.getKeyCode() == KeyEvent.VK_G) {
+                    curveSteps++;
+                    updateCurve();
+                }
+                //editace krivky
                 if (e.getKeyCode() == KeyEvent.VK_E) {
                     editPointMode = !editPointMode;
                     panel.setEditModeText(String.valueOf(editPointMode).toUpperCase());
                 }
-
                 if (editPointMode) {
                     if (e.getKeyCode() == KeyEvent.VK_1) activePointIndex = 0;
                     if (e.getKeyCode() == KeyEvent.VK_2) activePointIndex = 1;
@@ -289,7 +304,7 @@ public class Controller3D {
             default -> Cubic.BEZIER;
         };
 
-        curve = new Curve(typeMatrix, p1, p2, p3, p4);
+        curve = new Curve(typeMatrix, p1, p2, p3, p4, curveSteps);
 
         curve.setModel(oldModel);
 
