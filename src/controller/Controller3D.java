@@ -41,6 +41,7 @@ public class Controller3D {
 
     private int curveSteps;
 
+    private boolean animationMode = false;
     private boolean editPointMode = false;
     private int activePointIndex = 0;
 
@@ -100,6 +101,19 @@ public class Controller3D {
         initListeners();
 
         drawScene();
+
+        //animace
+        new javax.swing.Timer(20, e -> {
+            if (animationMode) {
+                double speed = Math.toRadians(2);
+
+                Solid active = solids.get(activeSolidIndex);
+
+                active.setModel(new Mat4RotZ(speed).mul(active.getModel()));
+
+                drawScene();
+            }
+        }).start();
     }
 
     private void initListeners() {
@@ -198,6 +212,9 @@ public class Controller3D {
                 if(e.getKeyCode() == KeyEvent.VK_D)
                     camera = camera.right(0.5);
 
+                if (e.getKeyCode() == KeyEvent.VK_L) {
+                    animationMode = !animationMode;
+                }
                 //cubic modes
                 if (e.getKeyCode() == KeyEvent.VK_M) {
 
