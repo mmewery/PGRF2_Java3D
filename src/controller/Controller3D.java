@@ -45,6 +45,7 @@ public class Controller3D {
 
     private boolean animationMode = false;
     private boolean editPointMode = false;
+    private boolean isOrth = false;
     private int activePointIndex = 0;
 
     public Controller3D(Panel panel) {
@@ -195,15 +196,18 @@ public class Controller3D {
 
                 //perspective
                 if (e.getKeyCode() == KeyEvent.VK_P) {
-                    proj = new Mat4PerspRH(
-                            Math.toRadians(90),
-                            panel.getRaster().getHeight() / (double) panel.getRaster().getWidth(), 0.1,100);
-                }
-                //ortogonalni
-                if (e.getKeyCode() == KeyEvent.VK_O) {
-                    double aspect = (double) panel.getRaster().getWidth() / panel.getRaster().getHeight();
+                    if(isOrth){
+                        proj = new Mat4PerspRH(
+                                Math.toRadians(90),
+                                panel.getRaster().getHeight() / (double) panel.getRaster().getWidth(), 0.1,100);
+                        isOrth = false;
+                    }
+                    else{
+                        double aspect = (double) panel.getRaster().getWidth() / panel.getRaster().getHeight();
+                        proj = new Mat4OrthoRH(5 * aspect, 5,0.1,200);
+                        isOrth = true;
+                    }
 
-                    proj = new Mat4OrthoRH(5 * aspect, 5,0.1,200);
                 }
                 // camera wasd
                 if(e.getKeyCode() == KeyEvent.VK_W)
