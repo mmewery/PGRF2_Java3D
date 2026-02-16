@@ -1,12 +1,11 @@
 package raster;
 
-import java.util.OptionalInt;
+import java.util.Optional;
 
-public interface Raster {
-    void setPixel(int x, int y, int color);
-    OptionalInt getPixel(int x, int y);
+public interface Raster<T> {
+    void setValue(int x, int y, T value);
+    Optional<T> getValue(int x, int y);
     int getWidth();
     int getHeight();
     void clear();
-
 }

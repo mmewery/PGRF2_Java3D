@@ -1,5 +1,6 @@
 package controller;
 
+import raster.ZBuffer;
 import rasterize.LineRasterizer;
 import rasterize.LineRasterizerTrivial;
 import render.Renderer;
@@ -17,6 +18,7 @@ import java.util.List;
 public class Controller3D {
 
     private final Panel panel;
+    private final ZBuffer zBuffer;
     // Rasterizers
     private LineRasterizer lineRasterizer;
     // Renderers
@@ -47,6 +49,7 @@ public class Controller3D {
 
     public Controller3D(Panel panel) {
         this.panel = panel;
+        this.zBuffer = new ZBuffer(panel.getRaster());
         this.lineRasterizer = new LineRasterizerTrivial(panel.getRaster());
 
         this.camera = new Camera()
@@ -202,7 +205,7 @@ public class Controller3D {
 
                     proj = new Mat4OrthoRH(5 * aspect, 5,0.1,200);
                 }
-                // camera wsad
+                // camera wasd
                 if(e.getKeyCode() == KeyEvent.VK_W)
                     camera = camera.forward(0.5);
                 if(e.getKeyCode() == KeyEvent.VK_A)
@@ -216,7 +219,7 @@ public class Controller3D {
                     animationMode = !animationMode;
                 }
                 //cubic modes
-                if (e.getKeyCode() == KeyEvent.VK_M) {
+                if (e.getKeyCode() == KeyEvent.VK_C) {
 
                     cubicMode++;
                     if (cubicMode >= cubicModes.size()) {
@@ -305,7 +308,9 @@ public class Controller3D {
         renderer.renderSolid(axisY);
         renderer.renderSolid(axisZ);
 
-        renderer.renderSolids(solids);
+//        renderer.renderSolids(solids);
+        zBuffer.setPixelWithZTest(100, 100, 0.1, new Col(0xff0000)); //0.1
+        zBuffer.setPixelWithZTest(100, 100, 0.5, new Col(0x00ff00)); //0.5
 
         panel.repaint();
     }

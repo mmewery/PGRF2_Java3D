@@ -1,10 +1,13 @@
 package raster;
 
+import transforms.Col;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Optional;
 import java.util.OptionalInt;
 
-public class RasterBufferedImage implements Raster{
+public class RasterBufferedImage implements Raster<Col>{
 
     private final BufferedImage image;
 
@@ -13,19 +16,18 @@ public class RasterBufferedImage implements Raster{
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     }
 
-    @Override
-    public void setPixel(int x, int y, int color) {
+    public void setValue(int x, int y, Col color) {
         if (x < 0 || x >= image.getWidth() || y < 0 || y >= image.getHeight())
             return;
-        image.setRGB(x, y, color);
+        image.setRGB(x, y, color.getRGB());
     }
 
 
     @Override
-    public OptionalInt getPixel(int x, int y) {
+    public Optional<Col> getValue(int x, int y) {
         if (x < 0 || y < 0 || x >= image.getWidth() || y >= image.getHeight())
-            return OptionalInt.empty();
-        return OptionalInt.of(image.getRGB(x, y));
+            return Optional.empty();
+        return Optional.of(new Col(image.getRGB(x, y)));
     }
 
 
