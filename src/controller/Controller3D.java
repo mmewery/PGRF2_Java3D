@@ -1,8 +1,10 @@
 package controller;
 
+import model.Vertex;
 import raster.ZBuffer;
 import rasterize.LineRasterizer;
 import rasterize.LineRasterizerTrivial;
+import rasterize.TriangleRasterizer;
 import render.Renderer;
 import solid.*;
 import transforms.*;
@@ -21,6 +23,7 @@ public class Controller3D {
     private final ZBuffer zBuffer;
     // Rasterizers
     private LineRasterizer lineRasterizer;
+    private TriangleRasterizer triangleRasterizer;
     // Renderers
     private Renderer renderer;
     // Solids
@@ -52,6 +55,7 @@ public class Controller3D {
         this.panel = panel;
         this.zBuffer = new ZBuffer(panel.getRaster());
         this.lineRasterizer = new LineRasterizerTrivial(panel.getRaster());
+        this.triangleRasterizer = new TriangleRasterizer(zBuffer);
 
         this.camera = new Camera()
                 .withPosition(new Vec3D(0.5, -1.5, 1))
@@ -315,6 +319,11 @@ public class Controller3D {
 //        renderer.renderSolids(solids);
         zBuffer.setPixelWithZTest(100, 100, 0.1, new Col(0xff0000)); //0.1
         zBuffer.setPixelWithZTest(100, 100, 0.5, new Col(0x00ff00)); //0.5
+
+        triangleRasterizer.rasterize(new Vertex(400, 0, 0.5), new Vertex(0, 300, 0.5), new Vertex(599, 599, 0.5), new Col(0x00ffff));
+        triangleRasterizer.rasterize(new Vertex(400, 0, 0.6), new Vertex(0, 300, 0.6), new Vertex(599, 599, 0.1), new Col(0xffffff));
+
+
 
         panel.repaint();
     }
