@@ -25,7 +25,7 @@ public class Controller3D {
     private LineRasterizer lineRasterizer;
     private TriangleRasterizer triangleRasterizer;
     // Renderers
-    private Renderer renderer;
+    private final Renderer renderer;
     // Solids
     private List<Solid> solids = new ArrayList<>();
     Solid axisX, axisY, axisZ, cube, cone, curve;
@@ -321,7 +321,7 @@ public class Controller3D {
         zBuffer.setPixelWithZTest(100, 100, 0.5, new Col(0x00ff00)); //0.5
 
         triangleRasterizer.rasterize(new Vertex(400, 0, 0.5), new Vertex(0, 300, 0.5), new Vertex(599, 599, 0.5), new Col(0x00ffff));
-        triangleRasterizer.rasterize(new Vertex(400, 0, 0.6), new Vertex(0, 300, 0.6), new Vertex(599, 599, 0.1), new Col(0xffffff));
+        triangleRasterizer.rasterize(new Vertex(200, 200, 0.6), new Vertex(0, 300, 0.6), new Vertex(599, 599, 0.1), new Col(0xffffff));
 
 
 

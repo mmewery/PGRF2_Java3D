@@ -13,7 +13,21 @@ public class TriangleRasterizer {
     }
 
     public void rasterize(Vertex a, Vertex b, Vertex c, Col color){
-        //TODO seradit vse body dle souradnic Y; Ay<By<Cy
+        if (a.getY() > b.getY()) {
+            Vertex temp = a;
+            a = b;
+            b = temp;
+        }
+        if (a.getY() > c.getY()) {
+            Vertex temp = a;
+            a = c;
+            c = temp;
+        }
+        if (b.getY() > c.getY()) {
+            Vertex temp = b;
+            b = c;
+            c = temp;
+        }
 
         int ax = (int)Math.round(a.getX());
         int ay = (int)Math.round(a.getY());
@@ -39,15 +53,47 @@ public class TriangleRasterizer {
             int xAC = (int)Math.round((1-tAC)*ax+tAC*cx);
             double zAC = (1-tAC)*az+tAC*cz;
 
-            //todo kontrola ze xAB<xAC, pokud ne - prohazuji
+            if (xAB > xAC) {
+                int tempx = xAB;
+                xAB = xAC;
+                xAC = tempx;
+                double tempz = zAB;
+                zAB = zAC;
+                zAC = tempz;
+            }
             for (int x = xAB; x <= xAC; x++){
                 double t = (x - xAB)/(double)(xAC - xAB);
                 double z = (1-t)*zAB+t*zAC;
 
                 zBuffer.setPixelWithZTest(x, y, z, color);
             }
-            //todo 2. cast trojuhelniku
+        }
+        for(int y = by; y < cy; y++){
+            //hrana AC
+            double tAC = (y - ay)/ (double)(cy - ay);
+            int xAC = (int)Math.round((1-tAC)*ax+tAC*cx);
+            double zAC = (1-tAC)*az+tAC*cz;
 
+            //hrana BC
+            double tBC = (y - by)/ (double)(cy - by);
+            int xBC = (int)Math.round((1-tBC)*bx+tBC*cx);
+            double zBC = (1-tBC)*bz+tBC*cz;
+
+            //2. polovina
+            if (xBC > xAC) {
+                int tempx = xBC;
+                xBC = xAC;
+                xAC = tempx;
+                double tempz = zBC;
+                zBC = zAC;
+                zAC = tempz;
+            }
+            for (int x = xBC; x <= xAC; x++){
+                double t = (x - xBC)/(double)(xAC - xBC);
+                double z = (1-t)*zBC+t*zAC;
+
+                zBuffer.setPixelWithZTest(x, y, z, color);
+            }
         }
     }
 }
