@@ -3,7 +3,7 @@ package solid;
 import transforms.Col;
 import transforms.Point3D;
 
-public class AxisX extends Solid {
+public class AxisX extends SimpleSolid {
     public AxisX() {
         color = new Col(0xff0000);
 

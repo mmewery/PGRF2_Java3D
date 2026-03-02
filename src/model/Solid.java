@@ -16,4 +16,20 @@ public abstract class Solid {
         this.partBuffer = partBuffer;
         this.modelMat = modelMat;
     }
+
+    public List<Vertex> getVertexBuffer() {
+        return vertexBuffer;
+    }
+
+    public List<Integer> getIndexBuffer() {
+        return indexBuffer;
+    }
+
+    public List<SolidPart> getPartBuffer() {
+        return partBuffer;
+    }
+
+    public Mat4 getModelMat() {
+        return modelMat;
+    }
 }

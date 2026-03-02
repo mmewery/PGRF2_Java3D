@@ -1,15 +1,15 @@
 package model;
 
-import solid.Solid;
+import solid.SimpleSolid;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Scene {
 
-    private final List<Solid> solids;
+    private final List<SimpleSolid> simpleSolids;
 
     public Scene(){
-        solids = new ArrayList<>();
+        simpleSolids = new ArrayList<>();
     }
 }

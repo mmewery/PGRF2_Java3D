@@ -3,7 +3,7 @@ package solid;
 import transforms.Col;
 import transforms.Point3D;
 
-public class Cube extends Solid {
+public class Cube extends SimpleSolid {
     public Cube() {
         color = new Col(0x00ffff); // Cyan
 

@@ -2,7 +2,7 @@ package solid;
 
 import transforms.Point3D;
 
-public class Cone extends Solid {
+public class Cone extends SimpleSolid {
     public Cone() {
         double height = 1.5;
         double radius = 0.5;

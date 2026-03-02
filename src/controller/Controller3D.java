@@ -1,6 +1,8 @@
 package controller;
 
-import model.Vertex;
+
+import model.Arrow;
+import model.Solid;
 import raster.ZBuffer;
 import rasterize.LineRasterizer;
 import rasterize.LineRasterizerTrivial;
@@ -22,13 +24,15 @@ public class Controller3D {
     private final Panel panel;
     private final ZBuffer zBuffer;
     // Rasterizers
-    private LineRasterizer lineRasterizer;
-    private TriangleRasterizer triangleRasterizer;
+    private final LineRasterizer lineRasterizer;
+    private final TriangleRasterizer triangleRasterizer;
     // Renderers
     private final Renderer renderer;
     // Solids
+    private List<SimpleSolid> simpleSolids = new ArrayList<>();
     private List<Solid> solids = new ArrayList<>();
-    Solid axisX, axisY, axisZ, cube, cone;
+    SimpleSolid axisX, axisY, axisZ, cube, cone;
+    Solid arrow;
 
 
     private int activeSolidIndex = 0;
@@ -60,7 +64,7 @@ public class Controller3D {
         );
 
         this.renderer = new Renderer(
-                lineRasterizer,
+                lineRasterizer, triangleRasterizer,
                 panel.getRaster().getWidth(),
                 panel.getRaster().getHeight(),
                 camera.getViewMatrix(),
@@ -75,11 +79,16 @@ public class Controller3D {
 
         cube = new Cube();
         cube.setModel(new Mat4Transl(-0.7, 0.5, 0.5));
-        solids.add(cube);
+        simpleSolids.add(cube);
 
         cone = new Cone();
         cone.setModel(new Mat4Transl(0.7, 0.5, 0));
-        solids.add(cone);
+        simpleSolids.add(cone);
+
+        arrow = new Arrow();
+        solids.add(arrow);
+
+
 
         initListeners();
 
@@ -120,46 +129,46 @@ public class Controller3D {
                 //aktivni teleso
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                     activeSolidIndex++;
-                    if (activeSolidIndex >= solids.size()) {
+                    if (activeSolidIndex >= simpleSolids.size()) {
                         activeSolidIndex = 0;
                     }
-                    for(Solid solid : solids) {
-                        solid.setColor(new Col(0xffffff));
+                    for(SimpleSolid simpleSolid : simpleSolids) {
+                        simpleSolid.setColor(new Col(0xffffff));
                     }
-                    solids.get(activeSolidIndex).setColor(new Col(0x00ffff));
+                    simpleSolids.get(activeSolidIndex).setColor(new Col(0x00ffff));
                 }
 
                 //translace
                 double step = 0.2;
                 if (e.getKeyCode() == KeyEvent.VK_LEFT)
-                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(-step, 0, 0)));
+                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(-step, 0, 0)));
                 if (e.getKeyCode() == KeyEvent.VK_RIGHT)
-                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(step, 0, 0)));
+                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(step, 0, 0)));
                 if (e.getKeyCode() == KeyEvent.VK_UP)
-                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, step, 0)));
+                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, step, 0)));
                 if (e.getKeyCode() == KeyEvent.VK_DOWN)
-                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, -step, 0)));
+                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, -step, 0)));
                 if (e.getKeyCode() == KeyEvent.VK_PAGE_UP)
-                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, step)));
+                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, step)));
                 if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN)
-                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, -step)));
+                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, -step)));
 
                 //rotace
                 double angle = Math.toRadians(5);
                 if (e.getKeyCode() == KeyEvent.VK_X)
-                    solids.get(activeSolidIndex).setModel(new Mat4RotX(angle).mul(solids.get(activeSolidIndex).getModel()));
+                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotX(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
                 if (e.getKeyCode() == KeyEvent.VK_Y)
-                    solids.get(activeSolidIndex).setModel(new Mat4RotY(angle).mul(solids.get(activeSolidIndex).getModel()));
+                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotY(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
                 if (e.getKeyCode() == KeyEvent.VK_Z)
-                    solids.get(activeSolidIndex).setModel(new Mat4RotZ(angle).mul(solids.get(activeSolidIndex).getModel()));
+                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotZ(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
 
                 //scale
                 double scaleUp = 1.2;
                 double scaleDown = 0.8;
                 if (e.getKeyCode() == KeyEvent.VK_CLOSE_BRACKET)
-                    solids.get(activeSolidIndex).setModel(new Mat4Scale(scaleUp).mul(solids.get(activeSolidIndex).getModel()));
+                    simpleSolids.get(activeSolidIndex).setModel(new Mat4Scale(scaleUp).mul(simpleSolids.get(activeSolidIndex).getModel()));
                 if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET)
-                    solids.get(activeSolidIndex).setModel(new Mat4Scale(scaleDown).mul(solids.get(activeSolidIndex).getModel()));
+                    simpleSolids.get(activeSolidIndex).setModel(new Mat4Scale(scaleDown).mul(simpleSolids.get(activeSolidIndex).getModel()));
 
                 //perspective
                 if (e.getKeyCode() == KeyEvent.VK_P) {
@@ -197,11 +206,12 @@ public class Controller3D {
         renderer.setView(camera.getViewMatrix());
         renderer.setProj(proj);
 
-        renderer.renderSolid(axisX);
-        renderer.renderSolid(axisY);
-        renderer.renderSolid(axisZ);
+        renderer.renderSimpleSolid(axisX);
+        renderer.renderSimpleSolid(axisY);
+        renderer.renderSimpleSolid(axisZ);
 
 //        renderer.renderSolids(solids);
+        renderer.renderSolids(solids);
 
         panel.repaint();
     }
