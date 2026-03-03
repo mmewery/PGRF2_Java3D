@@ -5,6 +5,7 @@ import model.Vertex;
 import rasterize.LineRasterizer;
 import rasterize.TriangleRasterizer;
 import solid.SimpleSolid;
+import solid.Solid;
 import transforms.Mat4;
 import transforms.Point3D;
 import transforms.Vec3D;
@@ -26,7 +27,7 @@ public class Renderer {
         this.proj = proj;
     }
 
-    public void renderSolid(model.Solid solid) {
+    public void renderSolid(Solid solid) {
         for (SolidPart part : solid.getPartBuffer()) {
             int startIndex = part.getStartIndex();
             int primitiveCount = part.getPrimitiveCount();
@@ -52,44 +53,44 @@ public class Renderer {
         }
     }
 
-    private void renderLine(model.Solid solid, int i1, int i2) {
+    private void renderLine(Solid solid, int i1, int i2) {
         Point3D a = solid.getVertexBuffer().get(i1).getPosition();
         Point3D b = solid.getVertexBuffer().get(i2).getPosition();
-
-        a = a.mul(solid.getModelMat()).mul(view).mul(proj);
-        b = b.mul(solid.getModelMat()).mul(view).mul(proj);
-
-        if (a.getW() < 0.1 || b.getW() < 0.1) return;
-
-        Vec3D v1 = transformToWindow(a.mul(1 / a.getW()));
-        Vec3D v2 = transformToWindow(b.mul(1 / b.getW()));
-
-        lineRasterizer.rasterize(
-                (int) Math.round(v1.getX()), (int) Math.round(v1.getY()),
-                (int) Math.round(v2.getX()), (int) Math.round(v2.getY())
-        );
+//
+//        a = a.mul(solid.getModelMat()).mul(view).mul(proj);
+//        b = b.mul(solid.getModelMat()).mul(view).mul(proj);
+//
+//        if (a.getW() < 0.1 || b.getW() < 0.1) return;
+//
+//        Vec3D v1 = transformToWindow(a.mul(1 / a.getW()));
+//        Vec3D v2 = transformToWindow(b.mul(1 / b.getW()));
+//
+//        lineRasterizer.rasterize(
+//                (int) Math.round(v1.getX()), (int) Math.round(v1.getY()),
+//                (int) Math.round(v2.getX()), (int) Math.round(v2.getY())
+//        );
     }
 
-    private void renderTriangle(model.Solid solid, int i1, int i2, int i3) {
-        Vertex v1 = solid.getVertexBuffer().get(i1);
-        Vertex v2 = solid.getVertexBuffer().get(i2);
-        Vertex v3 = solid.getVertexBuffer().get(i3);
+    private void renderTriangle(Solid solid, int i1, int i2, int i3) {
+//        Vertex v1 = solid.getVertexBuffer().get(i1);
+//        Vertex v2 = solid.getVertexBuffer().get(i2);
+//        Vertex v3 = solid.getVertexBuffer().get(i3);
 
-        Point3D p1 = v1.getPosition().mul(solid.getModelMat()).mul(view).mul(proj);
-        Point3D p2 = v2.getPosition().mul(solid.getModelMat()).mul(view).mul(proj);
-        Point3D p3 = v3.getPosition().mul(solid.getModelMat()).mul(view).mul(proj);
+//        Point3D p1 = v1.getPosition().mul(solid.getModelMat()).mul(view).mul(proj);
+//        Point3D p2 = v2.getPosition().mul(solid.getModelMat()).mul(view).mul(proj);
+//        Point3D p3 = v3.getPosition().mul(solid.getModelMat()).mul(view).mul(proj);
 
-        if (p1.getW() < 0.1 || p2.getW() < 0.1 || p3.getW() < 0.1) return;
-
-        Vec3D screenP1 = transformToWindow(p1.mul(1 / p1.getW()));
-        Vec3D screenP2 = transformToWindow(p2.mul(1 / p2.getW()));
-        Vec3D screenP3 = transformToWindow(p3.mul(1 / p3.getW()));
-
-        Vertex screenV1 = new Vertex(screenP1.getX(), screenP1.getY(), screenP1.getZ(), v1.getColor());
-        Vertex screenV2 = new Vertex(screenP2.getX(), screenP2.getY(), screenP2.getZ(), v2.getColor());
-        Vertex screenV3 = new Vertex(screenP3.getX(), screenP3.getY(), screenP3.getZ(), v3.getColor());
-
-        triangleRasterizer.rasterize(screenV1, screenV2, screenV3, v1.getColor());
+//        if (p1.getW() < 0.1 || p2.getW() < 0.1 || p3.getW() < 0.1) return;
+//
+//        Vec3D screenP1 = transformToWindow(p1.mul(1 / p1.getW()));
+//        Vec3D screenP2 = transformToWindow(p2.mul(1 / p2.getW()));
+//        Vec3D screenP3 = transformToWindow(p3.mul(1 / p3.getW()));
+//
+//        Vertex screenV1 = new Vertex(screenP1.getX(), screenP1.getY(), screenP1.getZ(), v1.getColor());
+//        Vertex screenV2 = new Vertex(screenP2.getX(), screenP2.getY(), screenP2.getZ(), v2.getColor());
+//        Vertex screenV3 = new Vertex(screenP3.getX(), screenP3.getY(), screenP3.getZ(), v3.getColor());
+//
+//        triangleRasterizer.rasterize(screenV1, screenV2, screenV3, v1.getColor());
     }
 
 
@@ -135,8 +136,8 @@ public class Renderer {
         }
     }
 
-    public void renderSolids(List<model.Solid> solids) {
-        for(model.Solid solid : solids) {
+    public void renderSolids(List<Solid> solids) {
+        for(Solid solid : solids) {
             renderSolid(solid);
         }
     }

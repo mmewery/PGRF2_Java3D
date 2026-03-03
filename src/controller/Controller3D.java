@@ -1,8 +1,9 @@
 package controller;
 
 
-import model.Arrow;
-import model.Solid;
+import render.SolidRenderer;
+import solid.Arrow;
+import solid.Solid;
 import raster.ZBuffer;
 import rasterize.LineRasterizer;
 import rasterize.LineRasterizerTrivial;
@@ -28,9 +29,9 @@ public class Controller3D {
     private final TriangleRasterizer triangleRasterizer;
     // Renderers
     private final Renderer renderer;
+    private final SolidRenderer solidRenderer;
     // Solids
     private List<SimpleSolid> simpleSolids = new ArrayList<>();
-    private List<Solid> solids = new ArrayList<>();
     SimpleSolid axisX, axisY, axisZ, cube, cone;
     Solid arrow;
 
@@ -49,6 +50,7 @@ public class Controller3D {
         this.zBuffer = new ZBuffer(panel.getRaster());
         this.lineRasterizer = new LineRasterizerTrivial(panel.getRaster());
         this.triangleRasterizer = new TriangleRasterizer(zBuffer);
+        this.solidRenderer = new SolidRenderer(lineRasterizer, triangleRasterizer);
 
         this.camera = new Camera()
                 .withPosition(new Vec3D(0.5, -1.5, 1))
@@ -86,7 +88,6 @@ public class Controller3D {
         simpleSolids.add(cone);
 
         arrow = new Arrow();
-        solids.add(arrow);
 
 
 
@@ -211,7 +212,7 @@ public class Controller3D {
         renderer.renderSimpleSolid(axisZ);
 
 //        renderer.renderSolids(solids);
-        renderer.renderSolids(solids);
+        solidRenderer.render(arrow);
 
         panel.repaint();
     }
