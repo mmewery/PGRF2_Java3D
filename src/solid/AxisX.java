@@ -1,15 +1,18 @@
 package solid;
 
+import model.SolidPart;
+import model.Topology;
+import model.Vertex;
 import transforms.Col;
-import transforms.Point3D;
 
-public class AxisX extends SimpleSolid {
+public class AxisX extends Solid {
     public AxisX() {
-        color = new Col(0xff0000);
-
-        vb.add(new Point3D(0, 0, 0));
-        vb.add(new Point3D(1, 0, 0));
+        vertexBuffer.add(new Vertex(0, 0, 0, new Col(0xff0000)));
+        vertexBuffer.add(new Vertex(1, 0, 0, new Col(0xff00)));
 
         addIndices(0, 1);
+
+        partBuffer.add(new SolidPart(Topology.LINE_LIST, 1, 0));
     }
 }
+

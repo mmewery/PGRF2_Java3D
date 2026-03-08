@@ -3,7 +3,7 @@ package model;
 import transforms.Col;
 import transforms.Point3D;
 
-public class Vertex {
+public class Vertex implements Vectorizable<Vertex>{
     private final Col color;
     private final Point3D position;
 
@@ -15,6 +15,11 @@ public class Vertex {
     public Vertex(double x, double y, double z, Col color) {
         this.color = color;
         this.position = new Point3D(x, y, z);
+    }
+
+    public Vertex(Point3D position, Col color) {
+        this.color = color;
+        this.position = position;
     }
 
     public Col getColor() {
@@ -35,5 +40,15 @@ public class Vertex {
 
     public double getZ(){
         return position.getZ();
+    }
+
+    @Override
+    public Vertex mul(double d) {
+        return new Vertex(position.mul(d), color.mul(d));
+    }
+
+    @Override
+    public Vertex add(Vertex v) {
+        return new Vertex(position.add(v.getPosition()), color.add(v.getColor()));
     }
 }

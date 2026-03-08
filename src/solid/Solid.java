@@ -2,6 +2,7 @@ package solid;
 
 import model.SolidPart;
 import model.Vertex;
+import transforms.Col;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,4 +29,6 @@ public abstract class Solid {
     public void addIndices(Integer... indices){
         indexBuffer.addAll(Arrays.asList(indices));
     }
+
+
 }

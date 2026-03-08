@@ -4,15 +4,17 @@ import model.Vertex;
 import raster.RasterBufferedImage;
 import raster.ZBuffer;
 import transforms.Col;
+import util.Lerp;
 
 public class TriangleRasterizer {
     private final ZBuffer zBuffer;
+    private final Lerp<Vertex> vertexLerp = new Lerp<>();
 
     public TriangleRasterizer(ZBuffer zBuffer) {
         this.zBuffer = zBuffer;
     }
 
-    public void rasterize(Vertex a, Vertex b, Vertex c, Col color){
+    public void rasterize(Vertex a, Vertex b, Vertex c){
         if (a.getY() > b.getY()) {
             Vertex temp = a;
             a = b;
@@ -45,54 +47,61 @@ public class TriangleRasterizer {
         for(int y = ay; y < by; y++){
             //hrana AB
             double tAB = (y - ay)/ (double)(by - ay);
-            int xAB = (int)Math.round((1-tAB)*ax+tAB*bx);
-            double zAB = (1-tAB)*az+tAB*bz;
+            Vertex vAB = vertexLerp.lerp(a, b, tAB);
 
             //hrana AC
             double tAC = (y - ay)/ (double)(cy - ay);
-            int xAC = (int)Math.round((1-tAC)*ax+tAC*cx);
-            double zAC = (1-tAC)*az+tAC*cz;
+            Vertex vAC = vertexLerp.lerp(a, c, tAC);
 
-            if (xAB > xAC) {
-                int tempx = xAB;
-                xAB = xAC;
-                xAC = tempx;
-                double tempz = zAB;
-                zAB = zAC;
-                zAC = tempz;
+            //todo spocitat normala
+            //todo spocitat u v textura
+
+            Vertex vStart = vAB;
+            Vertex vEnd = vAC;
+
+            if (vStart.getX() > vEnd.getX()) {
+                Vertex temp = vStart;
+                vStart = vEnd;
+                vEnd = temp;
             }
-            for (int x = xAB; x <= xAC; x++){
-                double t = (x - xAB)/(double)(xAC - xAB);
-                double z = (1-t)*zAB+t*zAC;
 
-                zBuffer.setPixelWithZTest(x, y, z, color);
+            int xMin = (int) Math.round(vStart.getX());
+            int xMax = (int) Math.round(vEnd.getX());
+            for (int x = xMin; x <= xMax; x++){
+                double t = (x - xMin) / (double)(xMax - xMin);
+                Vertex vFinal = vertexLerp.lerp(vStart, vEnd, t);
+                zBuffer.setPixelWithZTest(x, y, vFinal.getZ(), vFinal.getColor());
             }
         }
         for(int y = by; y < cy; y++){
             //hrana AC
             double tAC = (y - ay)/ (double)(cy - ay);
-            int xAC = (int)Math.round((1-tAC)*ax+tAC*cx);
-            double zAC = (1-tAC)*az+tAC*cz;
+            Vertex vAC = vertexLerp.lerp(a, c, tAC);
 
             //hrana BC
             double tBC = (y - by)/ (double)(cy - by);
-            int xBC = (int)Math.round((1-tBC)*bx+tBC*cx);
-            double zBC = (1-tBC)*bz+tBC*cz;
+            Vertex vBC = vertexLerp.lerp(b, c, tBC);
+
+            //todo spocitat normala
+            //todo spocitat u v textura
 
             //2. polovina
-            if (xBC > xAC) {
-                int tempx = xBC;
-                xBC = xAC;
-                xAC = tempx;
-                double tempz = zBC;
-                zBC = zAC;
-                zAC = tempz;
-            }
-            for (int x = xBC; x <= xAC; x++){
-                double t = (x - xBC)/(double)(xAC - xBC);
-                double z = (1-t)*zBC+t*zAC;
+            Vertex vStart = vAC;
+            Vertex vEnd = vBC;
 
-                zBuffer.setPixelWithZTest(x, y, z, color);
+            if (vStart.getX() > vEnd.getX()) {
+                Vertex temp = vStart;
+                vStart = vEnd;
+                vEnd = temp;
+            }
+
+            int xMin = (int) Math.round(vStart.getX());
+            int xMax = (int) Math.round(vEnd.getX());
+
+            for (int x = xMin; x <= xMax; x++) {
+                double t = (xMax == xMin) ? 0 : (x - xMin) / (double) (xMax - xMin);
+                Vertex vFinal = vertexLerp.lerp(vStart, vEnd, t);
+                zBuffer.setPixelWithZTest(x, y, vFinal.getZ(), vFinal.getColor());
             }
         }
     }

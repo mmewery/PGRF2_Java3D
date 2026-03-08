@@ -1,14 +1,13 @@
 package controller;
 
 
-import render.SolidRenderer;
-import solid.Arrow;
-import solid.Solid;
 import raster.ZBuffer;
 import rasterize.LineRasterizer;
 import rasterize.LineRasterizerTrivial;
 import rasterize.TriangleRasterizer;
 import render.Renderer;
+import render.RendererSolid;
+import render.RendererWire;
 import solid.*;
 import transforms.*;
 import view.Panel;
@@ -17,8 +16,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Controller3D {
 
@@ -28,13 +25,12 @@ public class Controller3D {
     private final LineRasterizer lineRasterizer;
     private final TriangleRasterizer triangleRasterizer;
     // Renderers
-    private final Renderer renderer;
-    private final SolidRenderer solidRenderer;
+    private final Renderer rendererWire;
+    private final Renderer rendererSolid;
     // Solids
-    private List<SimpleSolid> simpleSolids = new ArrayList<>();
-    SimpleSolid axisX, axisY, axisZ, cube, cone;
-    Solid arrow;
 
+
+    Solid arrow, axisX, axisY, axisZ;
 
     private int activeSolidIndex = 0;
 
@@ -50,7 +46,6 @@ public class Controller3D {
         this.zBuffer = new ZBuffer(panel.getRaster());
         this.lineRasterizer = new LineRasterizerTrivial(panel.getRaster());
         this.triangleRasterizer = new TriangleRasterizer(zBuffer);
-        this.solidRenderer = new SolidRenderer(lineRasterizer, triangleRasterizer);
 
         this.camera = new Camera()
                 .withPosition(new Vec3D(0.5, -1.5, 1))
@@ -65,7 +60,14 @@ public class Controller3D {
                 100
         );
 
-        this.renderer = new Renderer(
+        this.rendererWire = new RendererWire(
+                lineRasterizer, triangleRasterizer,
+                panel.getRaster().getWidth(),
+                panel.getRaster().getHeight(),
+                camera.getViewMatrix(),
+                proj
+        );
+        this.rendererSolid = new RendererSolid(
                 lineRasterizer, triangleRasterizer,
                 panel.getRaster().getWidth(),
                 panel.getRaster().getHeight(),
@@ -78,18 +80,7 @@ public class Controller3D {
         axisX = new AxisX();
         axisY = new AxisY();
         axisZ = new AxisZ();
-
-        cube = new Cube();
-        cube.setModel(new Mat4Transl(-0.7, 0.5, 0.5));
-        simpleSolids.add(cube);
-
-        cone = new Cone();
-        cone.setModel(new Mat4Transl(0.7, 0.5, 0));
-        simpleSolids.add(cone);
-
         arrow = new Arrow();
-
-
 
         initListeners();
 
@@ -128,48 +119,48 @@ public class Controller3D {
             @Override
             public void keyPressed(KeyEvent e) {
                 //aktivni teleso
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    activeSolidIndex++;
-                    if (activeSolidIndex >= simpleSolids.size()) {
-                        activeSolidIndex = 0;
-                    }
-                    for(SimpleSolid simpleSolid : simpleSolids) {
-                        simpleSolid.setColor(new Col(0xffffff));
-                    }
-                    simpleSolids.get(activeSolidIndex).setColor(new Col(0x00ffff));
-                }
+//                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+//                    activeSolidIndex++;
+//                    if (activeSolidIndex >= Solids.size()) {
+//                        activeSolidIndex = 0;
+//                    }
+//                    for(Solid solid : Solids) {
+//                        Solid.setColor(new Col(0xffffff));
+//                    }
+//                    Solids.get(activeSolidIndex).setColor(new Col(0x00ffff));
+//                }
 
                 //translace
                 double step = 0.2;
-                if (e.getKeyCode() == KeyEvent.VK_LEFT)
-                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(-step, 0, 0)));
-                if (e.getKeyCode() == KeyEvent.VK_RIGHT)
-                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(step, 0, 0)));
-                if (e.getKeyCode() == KeyEvent.VK_UP)
-                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, step, 0)));
-                if (e.getKeyCode() == KeyEvent.VK_DOWN)
-                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, -step, 0)));
-                if (e.getKeyCode() == KeyEvent.VK_PAGE_UP)
-                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, step)));
-                if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN)
-                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, -step)));
+//                if (e.getKeyCode() == KeyEvent.VK_LEFT)
+//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(-step, 0, 0)));
+//                if (e.getKeyCode() == KeyEvent.VK_RIGHT)
+//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(step, 0, 0)));
+//                if (e.getKeyCode() == KeyEvent.VK_UP)
+//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, step, 0)));
+//                if (e.getKeyCode() == KeyEvent.VK_DOWN)
+//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, -step, 0)));
+//                if (e.getKeyCode() == KeyEvent.VK_PAGE_UP)
+//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, step)));
+//                if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN)
+//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, -step)));
 
                 //rotace
-                double angle = Math.toRadians(5);
-                if (e.getKeyCode() == KeyEvent.VK_X)
-                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotX(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
-                if (e.getKeyCode() == KeyEvent.VK_Y)
-                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotY(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
-                if (e.getKeyCode() == KeyEvent.VK_Z)
-                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotZ(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
-
-                //scale
-                double scaleUp = 1.2;
-                double scaleDown = 0.8;
-                if (e.getKeyCode() == KeyEvent.VK_CLOSE_BRACKET)
-                    simpleSolids.get(activeSolidIndex).setModel(new Mat4Scale(scaleUp).mul(simpleSolids.get(activeSolidIndex).getModel()));
-                if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET)
-                    simpleSolids.get(activeSolidIndex).setModel(new Mat4Scale(scaleDown).mul(simpleSolids.get(activeSolidIndex).getModel()));
+//                double angle = Math.toRadians(5);
+//                if (e.getKeyCode() == KeyEvent.VK_X)
+//                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotX(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
+//                if (e.getKeyCode() == KeyEvent.VK_Y)
+//                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotY(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
+//                if (e.getKeyCode() == KeyEvent.VK_Z)
+//                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotZ(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
+//
+//                //scale
+//                double scaleUp = 1.2;
+//                double scaleDown = 0.8;
+//                if (e.getKeyCode() == KeyEvent.VK_CLOSE_BRACKET)
+//                    simpleSolids.get(activeSolidIndex).setModel(new Mat4Scale(scaleUp).mul(simpleSolids.get(activeSolidIndex).getModel()));
+//                if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET)
+//                    simpleSolids.get(activeSolidIndex).setModel(new Mat4Scale(scaleDown).mul(simpleSolids.get(activeSolidIndex).getModel()));
 
                 //perspective
                 if (e.getKeyCode() == KeyEvent.VK_P) {
@@ -204,15 +195,15 @@ public class Controller3D {
     private void drawScene() {
         panel.getRaster().clear();
 
-        renderer.setView(camera.getViewMatrix());
-        renderer.setProj(proj);
+        rendererWire.setView(camera.getViewMatrix());
+        rendererWire.setProj(proj);
 
-        renderer.renderSimpleSolid(axisX);
-        renderer.renderSimpleSolid(axisY);
-        renderer.renderSimpleSolid(axisZ);
+        rendererWire.render(axisX);
+        rendererWire.render(axisY);
+        rendererWire.render(axisZ);
 
 //        renderer.renderSolids(solids);
-        solidRenderer.render(arrow);
+        rendererSolid.render(arrow);
 
         panel.repaint();
     }

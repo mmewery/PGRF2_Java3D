@@ -13,8 +13,8 @@ public class Arrow extends Solid {
         vertexBuffer.add(new Vertex(270, 300, 0.5)); //v3
         vertexBuffer.add(new Vertex(250, 280, 0.5)); //v4
 
-        addIndices(0, 1); //lines
-        addIndices(2, 3, 4);
+        addIndices(0, 1); //line
+        addIndices(2, 3, 4); //triangle
 
         partBuffer.add(new SolidPart(Topology.LINE_LIST, 1, 0));
         partBuffer.add(new SolidPart(Topology.TRIANGLE_LIST, 1, 2));

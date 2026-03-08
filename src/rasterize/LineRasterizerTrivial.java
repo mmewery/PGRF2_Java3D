@@ -1,7 +1,9 @@
 package rasterize;
 
+import model.Vertex;
 import raster.RasterBufferedImage;
 import transforms.Col;
+import util.Lerp;
 
 public class LineRasterizerTrivial extends LineRasterizer {
 
@@ -20,46 +22,37 @@ public class LineRasterizerTrivial extends LineRasterizer {
 
 
     @Override
-    public void rasterize(int x1, int y1, int x2, int y2) {
-        float dx = x2 - x1;
-        float dy = y2 - y1;
+    public void rasterize(Vertex a, Vertex b) {
+        double x1 = a.getX();
+        double y1 = a.getY();
+        double x2 = b.getX();
+        double y2 = b.getY();
 
-        if (dx == 0) {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+
+        Lerp<Vertex> lerp = new Lerp<>();
+
+        if (Math.abs(dy) > Math.abs(dx)) {
             if (y1 > y2) {
-                int temp = y1; y1 = y2; y2 = temp;
+                Vertex temp = a; a = b; b = temp;
             }
-            for (int y = y1; y <= y2; y++) {
-                raster.setValue(x1, y, color);
-            }
-            return;
-        }
 
-        float k = dy / dx;
-        float q = y1 - k * x1;
-
-        if (Math.abs(k) > 1) {
-            if (y1 > y2) {
-                int tempX = x1, tempY = y1;
-                x1 = x2; y1 = y2;
-                x2 = tempX; y2 = tempY;
+            for (int y = (int) Math.round(a.getY()); y <= (int) Math.round(b.getY()); y++) {
+                double t = (y - a.getY()) / (b.getY() - a.getY());
+                Vertex interpolated = lerp.lerp(a, b, t);
+                raster.setValue((int) Math.round(interpolated.getX()), y, interpolated.getColor());
             }
-            for (int y = y1; y <= y2; y++) {
-                int x = Math.round((y - q) / k);
-                raster.setValue(x, y, color);
-            }
-        }
-
-        else {
+        } else {
             if (x1 > x2) {
-                int tempX = x1, tempY = y1;
-                x1 = x2; y1 = y2;
-                x2 = tempX; y2 = tempY;
+                Vertex temp = a; a = b; b = temp;
             }
-            for (int x = x1; x <= x2; x++) {
-                int y = Math.round(k * x + q);
-                raster.setValue(x, y, color);
+
+            for (int x = (int) Math.round(a.getX()); x <= (int) Math.round(b.getX()); x++) {
+                double t = (x - a.getX()) / (b.getX() - a.getX());
+                Vertex interpolated = lerp.lerp(a, b, t);
+                raster.setValue(x, (int) Math.round(interpolated.getY()), interpolated.getColor());
             }
         }
-
     }
 }
