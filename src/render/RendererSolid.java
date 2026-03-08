@@ -1,12 +1,12 @@
 package render;
 
 import model.SolidPart;
-import model.Vertex;
 import rasterize.LineRasterizer;
 import rasterize.TriangleRasterizer;
 import solid.Solid;
 
 import transforms.Mat4;
+
 
 public class RendererSolid extends Renderer{
     public RendererSolid(LineRasterizer lineRasterizer, TriangleRasterizer triangleRasterizer, int width, int height, Mat4 view, Mat4 proj) {
@@ -16,23 +16,15 @@ public class RendererSolid extends Renderer{
     public void render(Solid solid){
         for(SolidPart part: solid.getPartBuffer()){
             int index, indexA, indexB, indexC;
-            Vertex a, b, c;
             switch (part.getTopology()){
                 case LINE_LIST:
                     index = part.getStartIndex();
-                    indexA = solid.getIndexBuffer().get(index++);
-                    indexB = solid.getIndexBuffer().get(index);
+                    for (int i = 0; i < part.getPrimitiveCount(); i++) {
+                        indexA = solid.getIndexBuffer().get(index++);
+                        indexB = solid.getIndexBuffer().get(index++);
 
-                    a = solid.getVertexBuffer().get(indexA);
-                    b = solid.getVertexBuffer().get(indexB);
-
-                    //todo vrcholy vynasobit MVP
-                    //todo orezani
-                    //todo dehomog
-                    //todo transformace do okna
-
-                    //rasterizace
-                    lineRasterizer.rasterize(a, b);
+                        renderLine(solid, indexA, indexB);
+                    }
                     break;
 
                 case TRIANGLE_LIST:
@@ -42,33 +34,64 @@ public class RendererSolid extends Renderer{
                         indexB = solid.getIndexBuffer().get(index++);
                         indexC = solid.getIndexBuffer().get(index++);
 
-                        a = solid.getVertexBuffer().get(indexA);
-                        b = solid.getVertexBuffer().get(indexB);
-                        c = solid.getVertexBuffer().get(indexC);
-
-                        //rasterizace
-                        triangleRasterizer.rasterize(a, b, c);
+                        renderTriangle(solid, indexA, indexB, indexC);
                     }
                     break;
 
                 case LINE_STRIP:
-                    //todo
+                    index = part.getStartIndex();
+                    indexA = solid.getIndexBuffer().get(index++);
+
+                    for (int i = 0; i < part.getPrimitiveCount(); i++) {
+                        indexB = solid.getIndexBuffer().get(index++);
+                        renderLine(solid, indexA, indexB);
+                        indexA = indexB;
+                    }
                     break;
 
                 case LINE_LOOP:
-                    //todo
+                    index = part.getStartIndex();
+                    indexA = solid.getIndexBuffer().get(index++);
+
+                    for (int i = 0; i < part.getPrimitiveCount()-1; i++) {
+                        indexB = solid.getIndexBuffer().get(index++);
+                        renderLine(solid, indexA, indexB);
+                        indexA = indexB;
+                    }
+                    renderLine(solid, part.getStartIndex(), solid.getIndexBuffer().get(--index));
                     break;
+
                 case TRIANGLE_STRIP:
-                    //todo
+                    index = part.getStartIndex();
+                    indexA = solid.getIndexBuffer().get(index++);
+                    indexB = solid.getIndexBuffer().get(index++);
+
+                    for (int i = 0; i < part.getPrimitiveCount(); i++) {
+                        indexC = solid.getIndexBuffer().get(index++);
+
+                        if (i % 2 == 0) {
+                            renderTriangle(solid, indexA, indexB, indexC);
+                        } else {
+                            renderTriangle(solid, indexB, indexA, indexC);
+                        }
+
+                        indexA = indexB;
+                        indexB = indexC;
+                    }
                     break;
 
                 case TRIANGLE_FAN:
-                    //todo
+                    index = part.getStartIndex();
+                    int centerIndex = solid.getIndexBuffer().get(index++);
+                    int prevIndex = solid.getIndexBuffer().get(index++);
+
+                    for (int i = 0; i < part.getPrimitiveCount(); i++) {
+                        int currIndex = solid.getIndexBuffer().get(index++);
+                        renderTriangle(solid, centerIndex, prevIndex, currIndex);
+                        prevIndex = currIndex;
+                    }
                     break;
 
-                case POINTS:
-                    //todo
-                    break;
             }
         }
     }

@@ -10,7 +10,7 @@ public class DepthBuffer implements Raster<Double>{
     public DepthBuffer(int width, int height) {
         this.width = width;
         this.height = height;
-        this.buffer = new double[width][height];
+        this.buffer = new double[height][width];
         clear();
     }
 
@@ -36,8 +36,9 @@ public class DepthBuffer implements Raster<Double>{
 
     @Override
     public void clear() {
-        for (int y = 0; y < width-1; y++) {
-            for (int x = 0; x < height-1; x++) {
+        // Loop through Y first (rows), then X (columns)
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
                 buffer[y][x] = 1.0;
             }
         }

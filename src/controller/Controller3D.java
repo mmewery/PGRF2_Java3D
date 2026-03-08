@@ -30,7 +30,7 @@ public class Controller3D {
     // Solids
 
 
-    Solid arrow, axisX, axisY, axisZ;
+    Solid arrow, axisX, axisY, axisZ, plane;
 
     private int activeSolidIndex = 0;
 
@@ -81,6 +81,7 @@ public class Controller3D {
         axisY = new AxisY();
         axisZ = new AxisZ();
         arrow = new Arrow();
+        plane = new Plane();
 
         initListeners();
 
@@ -194,16 +195,19 @@ public class Controller3D {
 
     private void drawScene() {
         panel.getRaster().clear();
+        zBuffer.clear();
 
         rendererWire.setView(camera.getViewMatrix());
         rendererWire.setProj(proj);
+        rendererSolid.setView(camera.getViewMatrix());
+        rendererSolid.setProj(proj);
 
         rendererWire.render(axisX);
         rendererWire.render(axisY);
         rendererWire.render(axisZ);
 
-//        renderer.renderSolids(solids);
         rendererSolid.render(arrow);
+        rendererSolid.render(plane);
 
         panel.repaint();
     }

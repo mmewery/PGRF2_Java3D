@@ -68,7 +68,7 @@ public class TriangleRasterizer {
             int xMin = (int) Math.round(vStart.getX());
             int xMax = (int) Math.round(vEnd.getX());
             for (int x = xMin; x <= xMax; x++){
-                double t = (x - xMin) / (double)(xMax - xMin);
+                double t = (xMax == xMin) ? 0 : (x - xMin) / (double) (xMax - xMin);
                 Vertex vFinal = vertexLerp.lerp(vStart, vEnd, t);
                 zBuffer.setPixelWithZTest(x, y, vFinal.getZ(), vFinal.getColor());
             }
