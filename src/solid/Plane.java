@@ -9,7 +9,7 @@ public class Plane extends Solid{
     public Plane() {
         vertexBuffer.add(new Vertex(1, 1, 0.5, new Col(0xff00ff)));
         vertexBuffer.add(new Vertex(1, -1, 0.5, new Col(0xff0000)));
-        vertexBuffer.add(new Vertex(-1, -1, 0.5, new Col(0x000000)));
+        vertexBuffer.add(new Vertex(-1, -1, 0.5, new Col(0xffffff)));
         vertexBuffer.add(new Vertex(-1, 1, 0.5, new Col(0x0000ff)));
 
         addIndices(0, 1, 2, 3);
