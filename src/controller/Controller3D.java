@@ -44,7 +44,7 @@ public class Controller3D {
     public Controller3D(Panel panel) {
         this.panel = panel;
         this.zBuffer = new ZBuffer(panel.getRaster());
-        this.lineRasterizer = new LineRasterizerTrivial(panel.getRaster());
+        this.lineRasterizer = new LineRasterizerTrivial(zBuffer);
         this.triangleRasterizer = new TriangleRasterizer(zBuffer);
 
         this.camera = new Camera()

@@ -2,14 +2,13 @@ package rasterize;
 
 
 import model.Vertex;
-import raster.RasterBufferedImage;
-import transforms.Col;
+import raster.ZBuffer;
 
 public abstract class LineRasterizer {
-    protected RasterBufferedImage raster;
+    protected final ZBuffer zBuffer;
 
-    public LineRasterizer(RasterBufferedImage raster) {
-        this.raster = raster;
+    public LineRasterizer(ZBuffer zBuffer) {
+        this.zBuffer = zBuffer;
 
     }
 

@@ -1,22 +1,13 @@
 package rasterize;
 
 import model.Vertex;
-import raster.RasterBufferedImage;
-import transforms.Col;
+import raster.ZBuffer;
 import util.Lerp;
 
 public class LineRasterizerTrivial extends LineRasterizer {
 
-    /**
-     * výhody:
-     *   jednoduchá implementace, snadno pochopitelná;
-     * nevýhody:
-     *   používá operace s float a zaokrouhlování;
-     *   méně přesné kreslení;
-     */
-
-    public LineRasterizerTrivial(RasterBufferedImage raster) {
-        super(raster);
+    public LineRasterizerTrivial(ZBuffer zBuffer) {
+        super(zBuffer);
     }
 
 
@@ -41,7 +32,8 @@ public class LineRasterizerTrivial extends LineRasterizer {
             for (int y = (int) Math.round(a.getY()); y <= (int) Math.round(b.getY()); y++) {
                 double t = (y - a.getY()) / (b.getY() - a.getY());
                 Vertex interpolated = lerp.lerp(a, b, t);
-                raster.setValue((int) Math.round(interpolated.getX()), y, interpolated.getColor());
+                zBuffer.setPixelWithZTest((int) Math.round(interpolated.getX()), y, interpolated.getZ(), interpolated.getColor());
+
             }
         } else {
             if (x1 > x2) {
@@ -51,7 +43,8 @@ public class LineRasterizerTrivial extends LineRasterizer {
             for (int x = (int) Math.round(a.getX()); x <= (int) Math.round(b.getX()); x++) {
                 double t = (x - a.getX()) / (b.getX() - a.getX());
                 Vertex interpolated = lerp.lerp(a, b, t);
-                raster.setValue(x, (int) Math.round(interpolated.getY()), interpolated.getColor());
+
+                zBuffer.setPixelWithZTest(x, (int) Math.round(interpolated.getY()), interpolated.getZ(), interpolated.getColor());
             }
         }
     }
