@@ -3,6 +3,9 @@ package rasterize;
 import model.Vertex;
 import raster.RasterBufferedImage;
 import raster.ZBuffer;
+import shader.Shader;
+import shader.ShaderConstant;
+import shader.ShaderInterpolated;
 import transforms.Col;
 import util.Lerp;
 
@@ -14,7 +17,8 @@ public class TriangleRasterizer {
         this.zBuffer = zBuffer;
     }
 
-    public void rasterize(Vertex a, Vertex b, Vertex c){
+    public void rasterize(Vertex a, Vertex b, Vertex c, Shader shader) {
+
         if (a.getY() > b.getY()) {
             Vertex temp = a;
             a = b;
@@ -70,7 +74,7 @@ public class TriangleRasterizer {
             for (int x = xMin; x <= xMax; x++){
                 double t = (xMax == xMin) ? 0 : (x - xMin) / (double) (xMax - xMin);
                 Vertex vFinal = vertexLerp.lerp(vStart, vEnd, t);
-                zBuffer.setPixelWithZTest(x, y, vFinal.getZ(), vFinal.getColor());
+                zBuffer.setPixelWithZTest(x, y, vFinal.getZ(), shader.getColor(vFinal));
             }
         }
         for(int y = by; y < cy; y++){
@@ -101,7 +105,7 @@ public class TriangleRasterizer {
             for (int x = xMin; x <= xMax; x++) {
                 double t = (xMax == xMin) ? 0 : (x - xMin) / (double) (xMax - xMin);
                 Vertex vFinal = vertexLerp.lerp(vStart, vEnd, t);
-                zBuffer.setPixelWithZTest(x, y, vFinal.getZ(), vFinal.getColor());
+                zBuffer.setPixelWithZTest(x, y, vFinal.getZ(), shader.getColor(vFinal));
             }
         }
     }

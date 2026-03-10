@@ -2,10 +2,12 @@ package model;
 
 import transforms.Col;
 import transforms.Point3D;
+import transforms.Vec2D;
 
 public class Vertex implements Vectorizable<Vertex>{
     private final Col color;
     private final Point3D position;
+    //todo private final Vec2D uv;
 
     public Vertex(double x, double y, double z) {
         this.color = new Col(0xffff00);

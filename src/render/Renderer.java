@@ -3,10 +3,13 @@ package render;
 import model.Vertex;
 import rasterize.LineRasterizer;
 import rasterize.TriangleRasterizer;
+import shader.Shader;
+import shader.ShaderInterpolated;
 import solid.Solid;
 import transforms.Mat4;
 import transforms.Point3D;
 import transforms.Vec3D;
+import util.Lerp;
 
 import java.util.Optional;
 
@@ -15,6 +18,8 @@ public abstract class Renderer {
     protected TriangleRasterizer triangleRasterizer;
     protected int width, height;
     protected Mat4 view, proj;
+
+    private final Lerp<Vertex> vertexLerp = new Lerp<>();
 
     public Renderer(LineRasterizer lineRasterizer, TriangleRasterizer triangleRasterizer, int width, int height, Mat4 view, Mat4 proj) {
         this.lineRasterizer = lineRasterizer;
@@ -119,6 +124,24 @@ public abstract class Renderer {
         Point3D pC = vC.getPosition().mul(view).mul(proj);
 
         if (pA.getW() < 0.1 || pB.getW() < 0.1 || pC.getW() < 0.1) return;
+        //todo orezani
+        //todo orezani podle Z
+        //todo prohazet vrcholy podle z od max do min
+
+        double zMin = 0;
+        if(vA.getZ() < zMin){
+            return;
+        }
+        if(vB.getZ() < zMin){
+            double tAB = (zMin - vA.getZ())/(vB.getZ() - vA.getZ());
+            double tAC = (zMin - vA.getZ())/(vC.getZ() - vA.getZ());
+            vB = vertexLerp.lerp(vA, vB, tAB);
+            vC = vertexLerp.lerp(vA, vC, tAC);
+        }
+        if(vC.getZ() < zMin && vB.getZ() >= zMin){
+            //todo najit dva nove trojuhelniky
+
+        }
 
         Optional<Vec3D> dehomogA = pA.dehomog();
         Optional<Vec3D> dehomogB = pB.dehomog();
@@ -133,7 +156,7 @@ public abstract class Renderer {
             Vertex v2 = new Vertex(new Point3D(vecB), vB.getColor());
             Vertex v3 = new Vertex(new Point3D(vecC), vC.getColor());
 
-            triangleRasterizer.rasterize(v1, v2, v3);
+            triangleRasterizer.rasterize(v1, v2, v3, solid.getShader());
         }
     }
 

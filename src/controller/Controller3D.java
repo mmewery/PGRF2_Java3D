@@ -1,6 +1,7 @@
 package controller;
 
 
+import model.Vertex;
 import raster.ZBuffer;
 import rasterize.LineRasterizer;
 import rasterize.LineRasterizerTrivial;
@@ -8,14 +9,20 @@ import rasterize.TriangleRasterizer;
 import render.Renderer;
 import render.RendererSolid;
 import render.RendererWire;
+import shader.Shader;
+import shader.ShaderInterpolated;
 import solid.*;
 import transforms.*;
 import view.Panel;
 
+import javax.imageio.ImageIO;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class Controller3D {
 
@@ -41,11 +48,14 @@ public class Controller3D {
 
     private boolean isOrth = false;
 
+    private final BufferedImage texture;
+
     public Controller3D(Panel panel) {
         this.panel = panel;
         this.zBuffer = new ZBuffer(panel.getRaster());
         this.lineRasterizer = new LineRasterizerTrivial(zBuffer);
         this.triangleRasterizer = new TriangleRasterizer(zBuffer);
+
 
         this.camera = new Camera()
                 .withPosition(new Vec3D(0.5, -1.5, 1))
@@ -82,6 +92,12 @@ public class Controller3D {
         axisZ = new AxisZ();
         arrow = new Arrow();
         plane = new Plane();
+
+        try {
+            texture = ImageIO.read(new File("./res/textures/images.jpg"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         initListeners();
 
@@ -188,6 +204,25 @@ public class Controller3D {
                 if(e.getKeyCode() == KeyEvent.VK_D)
                     camera = camera.right(0.5);
 
+                if(e.getKeyCode() == KeyEvent.VK_T){
+                    plane.setShader(new Shader() {
+                        @Override
+                        public Col getColor(Vertex pixel) {
+                            Col pixelColor = new Col(255, 255, 255);
+                            Col ambientColor = new Col(100, 20, 100);
+                            Col diffuseColor = new Col(255, 0, 0);
+
+                            //todo normala
+                            //todo pozice svetla
+                            Point3D lightPosition = new Point3D(0, 0, 0.5);
+
+                            //todo vektor ke svetlu = pozice svetla - pozice vertexu
+
+
+                            return pixelColor.mul(ambientColor);
+                        }
+                    });
+                }
                 drawScene();
             }
         });
