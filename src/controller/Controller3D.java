@@ -23,6 +23,8 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Controller3D {
 
@@ -34,11 +36,10 @@ public class Controller3D {
     // Renderers
     private final Renderer rendererWire;
     private final Renderer rendererSolid;
+
     // Solids
-
-
-    Solid arrow, axisX, axisY, axisZ, plane;
-
+    Solid axisX, axisY, axisZ, cube, plane;
+    private final List<Solid> solids = new ArrayList<>();
     private int activeSolidIndex = 0;
 
     private int oldX, oldY;
@@ -47,6 +48,7 @@ public class Controller3D {
     private Mat4 proj;
 
     private boolean isOrth = false;
+    private boolean isWireframe = false;
 
     private final BufferedImage texture;
 
@@ -90,8 +92,15 @@ public class Controller3D {
         axisX = new AxisX();
         axisY = new AxisY();
         axisZ = new AxisZ();
-        arrow = new Arrow();
+        cube = new Cube();
         plane = new Plane();
+        cube.setModel(new Mat4Transl(1.5, 1.5, 0));
+
+        solids.add(cube);
+        solids.add(plane);
+
+
+
 
         try {
             texture = ImageIO.read(new File("./res/textures/images.jpg"));
@@ -136,63 +145,60 @@ public class Controller3D {
             @Override
             public void keyPressed(KeyEvent e) {
                 //aktivni teleso
-//                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-//                    activeSolidIndex++;
-//                    if (activeSolidIndex >= Solids.size()) {
-//                        activeSolidIndex = 0;
-//                    }
-//                    for(Solid solid : Solids) {
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    activeSolidIndex++;
+                    if (activeSolidIndex >= solids.size()) {
+                        activeSolidIndex = 0;
+                    }
+//                    for(Solid solid : solids) {
 //                        Solid.setColor(new Col(0xffffff));
 //                    }
-//                    Solids.get(activeSolidIndex).setColor(new Col(0x00ffff));
-//                }
+//                    solids.get(activeSolidIndex).setColor(new Col(0x00ffff));
+                }
 
                 //translace
                 double step = 0.2;
-//                if (e.getKeyCode() == KeyEvent.VK_LEFT)
-//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(-step, 0, 0)));
-//                if (e.getKeyCode() == KeyEvent.VK_RIGHT)
-//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(step, 0, 0)));
-//                if (e.getKeyCode() == KeyEvent.VK_UP)
-//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, step, 0)));
-//                if (e.getKeyCode() == KeyEvent.VK_DOWN)
-//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, -step, 0)));
-//                if (e.getKeyCode() == KeyEvent.VK_PAGE_UP)
-//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, step)));
-//                if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN)
-//                    simpleSolids.get(activeSolidIndex).setModel(simpleSolids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, -step)));
+                if (e.getKeyCode() == KeyEvent.VK_LEFT)
+                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(-step, 0, 0)));
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT)
+                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(step, 0, 0)));
+                if (e.getKeyCode() == KeyEvent.VK_UP)
+                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, step, 0)));
+                if (e.getKeyCode() == KeyEvent.VK_DOWN)
+                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, -step, 0)));
+                if (e.getKeyCode() == KeyEvent.VK_PAGE_UP)
+                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, step)));
+                if (e.getKeyCode() == KeyEvent.VK_PAGE_DOWN)
+                    solids.get(activeSolidIndex).setModel(solids.get(activeSolidIndex).getModel().mul(new Mat4Transl(0, 0, -step)));
 
                 //rotace
-//                double angle = Math.toRadians(5);
-//                if (e.getKeyCode() == KeyEvent.VK_X)
-//                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotX(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
-//                if (e.getKeyCode() == KeyEvent.VK_Y)
-//                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotY(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
-//                if (e.getKeyCode() == KeyEvent.VK_Z)
-//                    simpleSolids.get(activeSolidIndex).setModel(new Mat4RotZ(angle).mul(simpleSolids.get(activeSolidIndex).getModel()));
-//
-//                //scale
-//                double scaleUp = 1.2;
-//                double scaleDown = 0.8;
-//                if (e.getKeyCode() == KeyEvent.VK_CLOSE_BRACKET)
-//                    simpleSolids.get(activeSolidIndex).setModel(new Mat4Scale(scaleUp).mul(simpleSolids.get(activeSolidIndex).getModel()));
-//                if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET)
-//                    simpleSolids.get(activeSolidIndex).setModel(new Mat4Scale(scaleDown).mul(simpleSolids.get(activeSolidIndex).getModel()));
+                double angle = Math.toRadians(5);
+                if (e.getKeyCode() == KeyEvent.VK_X)
+                    solids.get(activeSolidIndex).setModel(new Mat4RotX(angle).mul(solids.get(activeSolidIndex).getModel()));
+                if (e.getKeyCode() == KeyEvent.VK_Y)
+                    solids.get(activeSolidIndex).setModel(new Mat4RotY(angle).mul(solids.get(activeSolidIndex).getModel()));
+                if (e.getKeyCode() == KeyEvent.VK_Z)
+                    solids.get(activeSolidIndex).setModel(new Mat4RotZ(angle).mul(solids.get(activeSolidIndex).getModel()));
+
+                //scale
+                double scaleUp = 1.2;
+                double scaleDown = 0.8;
+                if (e.getKeyCode() == KeyEvent.VK_CLOSE_BRACKET)
+                    solids.get(activeSolidIndex).setModel(new Mat4Scale(scaleUp).mul(solids.get(activeSolidIndex).getModel()));
+                if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET)
+                    solids.get(activeSolidIndex).setModel(new Mat4Scale(scaleDown).mul(solids.get(activeSolidIndex).getModel()));
 
                 //perspective
                 if (e.getKeyCode() == KeyEvent.VK_P) {
                     if(isOrth){
-                        proj = new Mat4PerspRH(
-                                Math.toRadians(90),
+                        proj = new Mat4PerspRH(Math.toRadians(90),
                                 panel.getRaster().getHeight() / (double) panel.getRaster().getWidth(), 0.1,100);
-                        isOrth = false;
                     }
                     else{
                         double aspect = (double) panel.getRaster().getWidth() / panel.getRaster().getHeight();
                         proj = new Mat4OrthoRH(5 * aspect, 5,0.1,200);
-                        isOrth = true;
                     }
-
+                    isOrth = !isOrth;
                 }
                 // camera wasd
                 if(e.getKeyCode() == KeyEvent.VK_W)
@@ -204,22 +210,37 @@ public class Controller3D {
                 if(e.getKeyCode() == KeyEvent.VK_D)
                     camera = camera.right(0.5);
 
+                if (e.getKeyCode() == KeyEvent.VK_M) {
+                    isWireframe = !isWireframe;
+                }
+
                 if(e.getKeyCode() == KeyEvent.VK_T){
-                    plane.setShader(new Shader() {
+                    solids.get(activeSolidIndex).setShader(new Shader() {
                         @Override
                         public Col getColor(Vertex pixel) {
-                            Col pixelColor = new Col(255, 255, 255);
-                            Col ambientColor = new Col(100, 20, 100);
-                            Col diffuseColor = new Col(255, 0, 0);
 
-                            //todo normala
-                            //todo pozice svetla
-                            Point3D lightPosition = new Point3D(0, 0, 0.5);
+                            Col ambientColor = new Col(0.2, 0.2, 0.2); // Slabá okolní složka
+                            Col diffuseColor = new Col(1.0, 0.0, 0.0); // Např. červená barva tělesa
 
-                            //todo vektor ke svetlu = pozice svetla - pozice vertexu
+                            Point3D lightPosition = new Point3D(0, 0, 5); // Pozice zdroje světla
 
+                            double dx = lightPosition.getX() - pixel.getPosition().getX();
+                            double dy = lightPosition.getY() - pixel.getPosition().getY();
+                            double dz = lightPosition.getZ() - pixel.getPosition().getZ();
 
-                            return pixelColor.mul(ambientColor);
+                            Vec3D lightVec = new Vec3D(dx, dy, dz).normalized().orElse(new Vec3D(0, 0, 1));
+                            Vec3D normal = pixel.getNormal().normalized().orElse(new Vec3D(0, 0, 1));
+
+                            // 3. Výpočet difúzní složky (skalární součin)
+                            double NdotL = Math.max(0.0, normal.dot(lightVec)); // Úhel mezi normálou a světlem
+
+                            // 4. Výsledná barva = Ambient + (Diffuse * NdotL)
+                            double r = ambientColor.getR() + (diffuseColor.getR() * NdotL);
+                            double g = ambientColor.getG() + (diffuseColor.getG() * NdotL);
+                            double b = ambientColor.getB() + (diffuseColor.getB() * NdotL);
+
+                            // Oříznutí přesahu (saturace na max 1.0, pokud Col pracuje s double 0-1)
+                            return new Col(Math.min(r, 1.0), Math.min(g, 1.0), Math.min(b, 1.0));
                         }
                     });
                 }
@@ -241,8 +262,14 @@ public class Controller3D {
         rendererWire.render(axisY);
         rendererWire.render(axisZ);
 
-        rendererSolid.render(arrow);
-        rendererSolid.render(plane);
+        for (Solid solid : solids) {
+            if (isWireframe) {
+                rendererWire.render(solid);
+            } else {
+                rendererSolid.render(solid);
+            }
+        }
+
 
         panel.repaint();
     }

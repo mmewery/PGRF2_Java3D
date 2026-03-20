@@ -47,6 +47,7 @@ public class TriangleRasterizer {
         int cy = (int)Math.round(c.getY());
         double cz = c.getZ();
 
+
         // 1. cast trojuhelniku
         for(int y = ay; y < by; y++){
             //hrana AB
@@ -56,9 +57,6 @@ public class TriangleRasterizer {
             //hrana AC
             double tAC = (y - ay)/ (double)(cy - ay);
             Vertex vAC = vertexLerp.lerp(a, c, tAC);
-
-            //todo spocitat normala
-            //todo spocitat u v textura
 
             Vertex vStart = vAB;
             Vertex vEnd = vAC;
@@ -85,9 +83,6 @@ public class TriangleRasterizer {
             //hrana BC
             double tBC = (y - by)/ (double)(cy - by);
             Vertex vBC = vertexLerp.lerp(b, c, tBC);
-
-            //todo spocitat normala
-            //todo spocitat u v textura
 
             //2. polovina
             Vertex vStart = vAC;

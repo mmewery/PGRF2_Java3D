@@ -4,7 +4,8 @@ import model.SolidPart;
 import model.Vertex;
 import shader.Shader;
 import shader.ShaderConstant;
-import transforms.Col;
+import transforms.Mat4;
+import transforms.Mat4Identity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ public abstract class Solid {
     protected final List<Vertex> vertexBuffer = new ArrayList<>();
     protected final List<Integer> indexBuffer = new ArrayList<>();
     protected final List<SolidPart> partBuffer = new ArrayList<>();
+    protected Mat4 model = new Mat4Identity();
     protected Shader shader = new ShaderConstant();
 
     public Shader getShader() {
@@ -40,5 +42,6 @@ public abstract class Solid {
         indexBuffer.addAll(Arrays.asList(indices));
     }
 
-
+    public Mat4 getModel() { return model; }
+    public void setModel(Mat4 model) { this.model = model; }
 }

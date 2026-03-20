@@ -119,29 +119,61 @@ public abstract class Renderer {
         Vertex vB = solid.getVertexBuffer().get(indexB);
         Vertex vC = solid.getVertexBuffer().get(indexC);
 
-        Point3D pA = vA.getPosition().mul(view).mul(proj);
-        Point3D pB = vB.getPosition().mul(view).mul(proj);
-        Point3D pC = vC.getPosition().mul(view).mul(proj);
-
-        if (pA.getW() < 0.1 || pB.getW() < 0.1 || pC.getW() < 0.1) return;
-        //todo orezani
-        //todo orezani podle Z
-        //todo prohazet vrcholy podle z od max do min
-
         double zMin = 0;
-        if(vA.getZ() < zMin){
+
+        // 1. TODO VYŘEŠENO: Proházet vrcholy podle Z od MAX do MIN
+        // (vA bude mít největší Z, vC bude mít nejmenší Z)
+        if (vA.getZ() < vB.getZ()) { Vertex temp = vA; vA = vB; vB = temp; }
+        if (vA.getZ() < vC.getZ()) { Vertex temp = vA; vA = vC; vC = temp; }
+        if (vB.getZ() < vC.getZ()) { Vertex temp = vB; vB = vC; vC = temp; }
+
+        if (vA.getZ() < zMin) {
+            // Celý trojúhelník je za ořezávací rovinou, nekreslíme nic
             return;
         }
-        if(vB.getZ() < zMin){
-            double tAB = (zMin - vA.getZ())/(vB.getZ() - vA.getZ());
-            double tAC = (zMin - vA.getZ())/(vC.getZ() - vA.getZ());
+
+        if (vB.getZ() < zMin) {
+            // Dva vrcholy (vB, vC) jsou za rovinou, jeden (vA) je před ní.
+            // Oříznutím vznikne 1 menší trojúhelník.
+            double tAB = (zMin - vA.getZ()) / (vB.getZ() - vA.getZ());
+            double tAC = (zMin - vA.getZ()) / (vC.getZ() - vA.getZ());
             vB = vertexLerp.lerp(vA, vB, tAB);
             vC = vertexLerp.lerp(vA, vC, tAC);
-        }
-        if(vC.getZ() < zMin && vB.getZ() >= zMin){
-            //todo najit dva nove trojuhelniky
 
+            drawTriangle(solid, vA, vB, vC);
         }
+        else if (vC.getZ() < zMin && vB.getZ() >= zMin) {
+            // 2. TODO VYŘEŠENO: Najít dva nové trojúhelníky
+            // Jeden vrchol (vC) je za rovinou, dva (vA, vB) jsou před ní.
+            // Vznikne čtyřúhelník, který musíme rozdělit na 2 menší trojúhelníky.
+
+            // Vypočteme průsečíky na hranách AC a BC
+            double tAC = (zMin - vA.getZ()) / (vC.getZ() - vA.getZ());
+            double tBC = (zMin - vB.getZ()) / (vC.getZ() - vB.getZ());
+
+            Vertex vAC = vertexLerp.lerp(vA, vC, tAC);
+            Vertex vBC = vertexLerp.lerp(vB, vC, tBC);
+
+            // Vykreslíme první trojúhelník
+            drawTriangle(solid, vA, vB, vAC);
+            // Vykreslíme druhý trojúhelník
+            drawTriangle(solid, vB, vBC, vAC);
+        }
+        else {
+            // Všechny 3 vrcholy jsou před rovinou, trojúhelník je celý viditelný
+            drawTriangle(solid, vA, vB, vC);
+        }
+    }
+    // Pomocná metoda pro transformaci a vykreslení už oříznutého trojúhelníku
+    private void drawTriangle(Solid solid, Vertex vA, Vertex vB, Vertex vC) {
+        Mat4 transform = solid.getModel().mul(view).mul(proj);
+
+        Point3D pA = vA.getPosition().mul(transform);
+        Point3D pB = vB.getPosition().mul(transform);
+        Point3D pC = vC.getPosition().mul(transform);
+
+        // Pojistka (clipping v homogenních souřadnicích proti W)
+        if (pA.getW() < 0.1 || pB.getW() < 0.1 || pC.getW() < 0.1) return;
 
         Optional<Vec3D> dehomogA = pA.dehomog();
         Optional<Vec3D> dehomogB = pB.dehomog();
@@ -152,9 +184,9 @@ public abstract class Renderer {
             Vec3D vecB = transformToWindow(dehomogB.get());
             Vec3D vecC = transformToWindow(dehomogC.get());
 
-            Vertex v1 = new Vertex(new Point3D(vecA), vA.getColor());
-            Vertex v2 = new Vertex(new Point3D(vecB), vB.getColor());
-            Vertex v3 = new Vertex(new Point3D(vecC), vC.getColor());
+            Vertex v1 = new Vertex(new Point3D(vecA), vA.getColor(), vA.getUv(), vA.getNormal());
+            Vertex v2 = new Vertex(new Point3D(vecB), vB.getColor(), vB.getUv(), vB.getNormal());
+            Vertex v3 = new Vertex(new Point3D(vecC), vC.getColor(), vC.getUv(), vC.getNormal());
 
             triangleRasterizer.rasterize(v1, v2, v3, solid.getShader());
         }
