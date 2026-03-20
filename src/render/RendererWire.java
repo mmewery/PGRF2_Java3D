@@ -1,14 +1,10 @@
 package render;
 
 import model.SolidPart;
-import model.Vertex;
 import rasterize.LineRasterizer;
 import rasterize.TriangleRasterizer;
 import solid.Solid;
 import transforms.Mat4;
-import transforms.Point3D;
-import transforms.Vec3D;
-import java.util.Optional;
 
 public class RendererWire extends Renderer{
 
@@ -17,14 +13,31 @@ public class RendererWire extends Renderer{
     }
 
     public void render(Solid solid) {
-
         for (SolidPart part : solid.getPartBuffer()) {
             int index = part.getStartIndex();
-            for (int i = 0; i < part.getPrimitiveCount(); i++) {
-                int indexA = solid.getIndexBuffer().get(index++);
-                int indexB = solid.getIndexBuffer().get(index++);
+            int indexA, indexB, indexC;
 
-                renderLine(solid, indexA, indexB);
+            switch (part.getTopology()) {
+                case LINE_LIST:
+                    for (int i = 0; i < part.getPrimitiveCount(); i++) {
+                        indexA = solid.getIndexBuffer().get(index++);
+                        indexB = solid.getIndexBuffer().get(index++);
+                        renderLine(solid, indexA, indexB);
+                    }
+                    break;
+
+                case TRIANGLE_LIST:
+                    for (int i = 0; i < part.getPrimitiveCount(); i++) {
+                        indexA = solid.getIndexBuffer().get(index++);
+                        indexB = solid.getIndexBuffer().get(index++);
+                        indexC = solid.getIndexBuffer().get(index++);
+
+                        renderLine(solid, indexA, indexB);
+                        renderLine(solid, indexB, indexC);
+                        renderLine(solid, indexC, indexA);
+                    }
+                    break;
+
             }
         }
     }

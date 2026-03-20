@@ -36,7 +36,6 @@ public class DepthBuffer implements Raster<Double>{
 
     @Override
     public void clear() {
-        // Loop through Y first (rows), then X (columns)
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 buffer[y][x] = 1.0;

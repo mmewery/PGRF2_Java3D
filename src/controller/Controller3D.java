@@ -10,7 +10,6 @@ import render.Renderer;
 import render.RendererSolid;
 import render.RendererWire;
 import shader.Shader;
-import shader.ShaderInterpolated;
 import solid.*;
 import transforms.*;
 import view.Panel;
@@ -38,7 +37,7 @@ public class Controller3D {
     private final Renderer rendererSolid;
 
     // Solids
-    Solid axisX, axisY, axisZ, cube, plane;
+    Solid axisX, axisY, axisZ, cube, sphere, cone;
     private final List<Solid> solids = new ArrayList<>();
     private int activeSolidIndex = 0;
 
@@ -93,11 +92,20 @@ public class Controller3D {
         axisY = new AxisY();
         axisZ = new AxisZ();
         cube = new Cube();
-        plane = new Plane();
-        cube.setModel(new Mat4Transl(1.5, 1.5, 0));
+        cube.setModel(new Mat4Transl(1.5, 0, 0));
+        cube.setModel(new Mat4Scale(0.8).mul(cube.getModel()));
+        sphere = new Sphere();
+        sphere.setModel(new Mat4Transl(-1.5, 0, 0));
+        sphere.setModel(new Mat4Scale(0.8).mul(sphere.getModel()));
+        cone = new Cone();
+        cone.setModel(new Mat4Transl(2.5, 0, 0));
+        cone.setModel(new Mat4Scale(0.8).mul(cone.getModel()));
+
 
         solids.add(cube);
-        solids.add(plane);
+        solids.add(sphere);
+        solids.add(cone);
+
 
 
 
@@ -219,10 +227,10 @@ public class Controller3D {
                         @Override
                         public Col getColor(Vertex pixel) {
 
-                            Col ambientColor = new Col(0.2, 0.2, 0.2); // Slabá okolní složka
-                            Col diffuseColor = new Col(1.0, 0.0, 0.0); // Např. červená barva tělesa
+                            Col ambientColor = new Col(0.2, 0.2, 0.2);
+                            Col diffuseColor = new Col(1.0, 0.0, 0.0);
 
-                            Point3D lightPosition = new Point3D(0, 0, 5); // Pozice zdroje světla
+                            Point3D lightPosition = new Point3D(0, 0, 2);
 
                             double dx = lightPosition.getX() - pixel.getPosition().getX();
                             double dy = lightPosition.getY() - pixel.getPosition().getY();
@@ -231,16 +239,13 @@ public class Controller3D {
                             Vec3D lightVec = new Vec3D(dx, dy, dz).normalized().orElse(new Vec3D(0, 0, 1));
                             Vec3D normal = pixel.getNormal().normalized().orElse(new Vec3D(0, 0, 1));
 
-                            // 3. Výpočet difúzní složky (skalární součin)
-                            double NdotL = Math.max(0.0, normal.dot(lightVec)); // Úhel mezi normálou a světlem
+                            double NdotL = Math.max(0.0, normal.dot(lightVec));
 
-                            // 4. Výsledná barva = Ambient + (Diffuse * NdotL)
                             double r = ambientColor.getR() + (diffuseColor.getR() * NdotL);
                             double g = ambientColor.getG() + (diffuseColor.getG() * NdotL);
                             double b = ambientColor.getB() + (diffuseColor.getB() * NdotL);
 
-                            // Oříznutí přesahu (saturace na max 1.0, pokud Col pracuje s double 0-1)
-                            return new Col(Math.min(r, 1.0), Math.min(g, 1.0), Math.min(b, 1.0));
+                            return new Col(r, g, b);
                         }
                     });
                 }
