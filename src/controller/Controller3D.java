@@ -11,6 +11,7 @@ import render.RendererSolid;
 import render.RendererWire;
 import shader.Shader;
 import shader.ShaderInterpolated;
+import shader.ShaderPhong;
 import shader.ShaderTexture;
 import solid.*;
 import transforms.*;
@@ -39,7 +40,7 @@ public class Controller3D {
     private final Renderer rendererSolid;
 
     // Solids
-    Solid axisX, axisY, axisZ, cube, sphere, cone;
+    Solid axisX, axisY, axisZ, cube, sphere, cone, lightSource;
     private final List<Solid> solids = new ArrayList<>();
     private int activeSolidIndex = 0;
 
@@ -93,25 +94,27 @@ public class Controller3D {
         axisX = new AxisX();
         axisY = new AxisY();
         axisZ = new AxisZ();
+
         cube = new Cube();
         cube.setModel(new Mat4Transl(1.5, 0, 0));
         cube.setModel(new Mat4Scale(0.8).mul(cube.getModel()));
+
         sphere = new Sphere();
         sphere.setModel(new Mat4Transl(-1.5, 0, 0));
         sphere.setModel(new Mat4Scale(0.8).mul(sphere.getModel()));
+
         cone = new Cone();
         cone.setModel(new Mat4Transl(2.5, 0, 0));
         cone.setModel(new Mat4Scale(0.8).mul(cone.getModel()));
 
+        lightSource = new Sphere();
+        lightSource.setModel(new Mat4Transl(1, 1, 4));
+        lightSource.setModel(new Mat4Scale(0.2).mul(lightSource.getModel()));
 
         solids.add(cube);
         solids.add(sphere);
         solids.add(cone);
-
-
-
-
-
+        solids.add(lightSource);
 
 
         try {
@@ -230,31 +233,7 @@ public class Controller3D {
                 }
 
                 if(e.getKeyCode() == KeyEvent.VK_T){
-                    solids.get(activeSolidIndex).setShader(new Shader() {
-                        @Override
-                        public Col getColor(Vertex pixel) {
-
-                            Col ambientColor = new Col(0.2, 0.2, 0.2);
-                            Col diffuseColor = pixel.getColor();
-
-                            Point3D lightPosition = new Point3D(1, 1, 2);
-
-                            double dx = lightPosition.getX() - pixel.getPosition().getX();
-                            double dy = lightPosition.getY() - pixel.getPosition().getY();
-                            double dz = lightPosition.getZ() - pixel.getPosition().getZ();
-
-                            Vec3D lightVec = new Vec3D(dx, dy, dz).normalized().orElse(new Vec3D(0, 0, 1));
-                            Vec3D normal = pixel.getNormal().normalized().orElse(new Vec3D(0, 0, 1));
-
-                            double NdotL = Math.max(0.0, normal.dot(lightVec));
-
-                            double r = ambientColor.getR() + (diffuseColor.getR() * NdotL);
-                            double g = ambientColor.getG() + (diffuseColor.getG() * NdotL);
-                            double b = ambientColor.getB() + (diffuseColor.getB() * NdotL);
-
-                            return new Col(r, g, b);
-                        }
-                    });
+                    solids.get(activeSolidIndex).setShader(new ShaderPhong(lightSource));
                 }
                 drawScene();
             }
