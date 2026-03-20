@@ -3,38 +3,46 @@ package solid;
 import model.SolidPart;
 import model.Topology;
 import model.Vertex;
-import transforms.Mat4Transl;
+import transforms.Col;
+import transforms.Point3D;
+import transforms.Vec2D;
 import transforms.Vec3D;
 
 public class Cube extends Solid {
     public Cube() {
-        vertexBuffer.add(new Vertex(-1, -1, -1, new Vec3D(0, 0, 1))); // 0
-        vertexBuffer.add(new Vertex( 1, -1, -1, new Vec3D(0, 0, 1))); // 1
-        vertexBuffer.add(new Vertex(-1,  1, -1, new Vec3D(0, 0, 1))); // 2
-        vertexBuffer.add(new Vertex( 1,  1, -1, new Vec3D(0, 0, 1))); // 3
-        vertexBuffer.add(new Vertex(-1, -1,  1, new Vec3D(0, 0, 1))); // 4
-        vertexBuffer.add(new Vertex( 1, -1,  1, new Vec3D(0, 0, 1))); // 5
-        vertexBuffer.add(new Vertex(-1,  1,  1, new Vec3D(0, 0, 1))); // 6
-        vertexBuffer.add(new Vertex( 1,  1,  1, new Vec3D(0, 0, 1))); // 7
+        Col color = new Col(0xffffff);
 
-        addIndices(
-                // Задняя грань
-                0, 1, 2,  1, 3, 2,
-                // Передняя грань
-                4, 6, 5,  5, 6, 7,
-                // Нижняя грань
-                0, 4, 1,  1, 4, 5,
-                // Верхняя грань
-                2, 3, 6,  3, 7, 6,
-                // Левая грань
-                0, 2, 4,  2, 6, 4,
-                // Правая грань
-                1, 5, 3,  3, 5, 7
-        );
 
-        // У нас ровно 12 треугольников в массиве, начиная с 0 индекса
+        addSide(new Point3D(-1, -1,  1), new Point3D( 1, -1,  1), new Point3D( 1,  1,  1), new Point3D(-1,  1,  1),
+                new Vec3D(0, 0, 1), color);
+
+        addSide(new Point3D( 1, -1, -1), new Point3D(-1, -1, -1), new Point3D(-1,  1, -1), new Point3D( 1,  1, -1),
+                new Vec3D(0, 0, -1), color);
+
+        addSide(new Point3D(-1,  1,  1), new Point3D( 1,  1,  1), new Point3D( 1,  1, -1), new Point3D(-1,  1, -1),
+                new Vec3D(0, 1, 0), color);
+
+        addSide(new Point3D(-1, -1, -1), new Point3D( 1, -1, -1), new Point3D( 1, -1,  1), new Point3D(-1, -1,  1),
+                new Vec3D(0, -1, 0), color);
+
+        addSide(new Point3D( 1, -1,  1), new Point3D( 1, -1, -1), new Point3D( 1,  1, -1), new Point3D( 1,  1,  1),
+                new Vec3D(1, 0, 0), color);
+
+        addSide(new Point3D(-1, -1, -1), new Point3D(-1, -1,  1), new Point3D(-1,  1,  1), new Point3D(-1,  1, -1),
+                new Vec3D(-1, 0, 0), color);
+
         partBuffer.add(new SolidPart(Topology.TRIANGLE_LIST, 12, 0));
+    }
 
+    private void addSide(Point3D p1, Point3D p2, Point3D p3, Point3D p4, Vec3D normal, Col color) {
+        int startIndex = vertexBuffer.size();
 
+        vertexBuffer.add(new Vertex(p1, color, new Vec2D(0, 1), normal));
+        vertexBuffer.add(new Vertex(p2, color, new Vec2D(1, 1), normal));
+        vertexBuffer.add(new Vertex(p3, color, new Vec2D(1, 0), normal));
+        vertexBuffer.add(new Vertex(p4, color, new Vec2D(0, 0), normal));
+
+        addIndices(startIndex, startIndex + 1, startIndex + 2);
+        addIndices(startIndex, startIndex + 2, startIndex + 3);
     }
 }

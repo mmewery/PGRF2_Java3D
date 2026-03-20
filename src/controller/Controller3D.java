@@ -10,6 +10,8 @@ import render.Renderer;
 import render.RendererSolid;
 import render.RendererWire;
 import shader.Shader;
+import shader.ShaderInterpolated;
+import shader.ShaderTexture;
 import solid.*;
 import transforms.*;
 import view.Panel;
@@ -110,10 +112,15 @@ public class Controller3D {
 
 
 
+
+
         try {
             texture = ImageIO.read(new File("./res/textures/images.jpg"));
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+        for (Solid solid : solids) {
+            solid.setShader(new ShaderTexture(texture));
         }
 
         initListeners();
@@ -228,9 +235,9 @@ public class Controller3D {
                         public Col getColor(Vertex pixel) {
 
                             Col ambientColor = new Col(0.2, 0.2, 0.2);
-                            Col diffuseColor = new Col(1.0, 0.0, 0.0);
+                            Col diffuseColor = pixel.getColor();
 
-                            Point3D lightPosition = new Point3D(0, 0, 2);
+                            Point3D lightPosition = new Point3D(1, 1, 2);
 
                             double dx = lightPosition.getX() - pixel.getPosition().getX();
                             double dy = lightPosition.getY() - pixel.getPosition().getY();
