@@ -3,8 +3,7 @@ package render;
 import model.Vertex;
 import rasterize.LineRasterizer;
 import rasterize.TriangleRasterizer;
-import shader.Shader;
-import shader.ShaderInterpolated;
+
 import solid.Solid;
 import transforms.Mat4;
 import transforms.Point3D;
@@ -121,11 +120,16 @@ public abstract class Renderer {
         Vertex vB = solid.getVertexBuffer().get(indexB);
         Vertex vC = solid.getVertexBuffer().get(indexC);
 
+        // 1. Aplikace Model a View transformace přímo na celý vertex!
         Mat4 modelView = solid.getModel().mul(view);
+        vA = vA.transf(modelView);
+        vB = vB.transf(modelView);
+        vC = vC.transf(modelView);
 
-        vA = new Vertex(vA.getPosition().mul(modelView), vA.getColor(), vA.getUv(), vA.getNormal());
-        vB = new Vertex(vB.getPosition().mul(modelView), vB.getColor(), vB.getUv(), vB.getNormal());
-        vC = new Vertex(vC.getPosition().mul(modelView), vC.getColor(), vC.getUv(), vC.getNormal());
+        // 2. Zachytíme si View pozici (protože teď jsme v 3D prostoru vůči kameře)
+        vA = vA.captureViewPos();
+        vB = vB.captureViewPos();
+        vC = vC.captureViewPos();
 
 
         double zMax = -0.1;
@@ -161,24 +165,28 @@ public abstract class Renderer {
         }
     }
     private void drawTriangle(Solid solid, Vertex vA, Vertex vB, Vertex vC) {
-        Point3D pA = vA.getPosition().mul(proj);
-        Point3D pB = vB.getPosition().mul(proj);
-        Point3D pC = vC.getPosition().mul(proj);
+        // 3. Aplikace Projekční matice pouze na zobrazovací souřadnice
+        vA = vA.transfPosOnly(proj);
+        vB = vB.transfPosOnly(proj);
+        vC = vC.transfPosOnly(proj);
 
-        if (pA.getW() < 0.1 || pB.getW() < 0.1 || pC.getW() < 0.1) return;
+        // Ořezání W
+        if (vA.getPosition().getW() < 0.1 || vB.getPosition().getW() < 0.1 || vC.getPosition().getW() < 0.1) return;
 
-        Optional<Vec3D> dehomogA = pA.dehomog();
-        Optional<Vec3D> dehomogB = pB.dehomog();
-        Optional<Vec3D> dehomogC = pC.dehomog();
+        // Dehomogenizace
+        Optional<Vec3D> dehomogA = vA.getPosition().dehomog();
+        Optional<Vec3D> dehomogB = vB.getPosition().dehomog();
+        Optional<Vec3D> dehomogC = vC.getPosition().dehomog();
 
         if (dehomogA.isPresent() && dehomogB.isPresent() && dehomogC.isPresent()) {
             Vec3D vecA = transformToWindow(dehomogA.get());
             Vec3D vecB = transformToWindow(dehomogB.get());
             Vec3D vecC = transformToWindow(dehomogC.get());
 
-            Vertex v1 = new Vertex(new Point3D(vecA), vA.getColor(), vA.getUv(), vA.getNormal());
-            Vertex v2 = new Vertex(new Point3D(vecB), vB.getColor(), vB.getUv(), vB.getNormal());
-            Vertex v3 = new Vertex(new Point3D(vecC), vC.getColor(), vC.getUv(), vC.getNormal());
+            // Finální vertexy předané do rasterizéru! Mají 2D pozici, ale pamatují si 3D ViewPos a Normálu!
+            Vertex v1 = new Vertex(new Point3D(vecA), vA.getViewPosition(), vA.getColor(), vA.getUv(), vA.getNormal());
+            Vertex v2 = new Vertex(new Point3D(vecB), vB.getViewPosition(), vB.getColor(), vB.getUv(), vB.getNormal());
+            Vertex v3 = new Vertex(new Point3D(vecC), vC.getViewPosition(), vC.getColor(), vC.getUv(), vC.getNormal());
 
             triangleRasterizer.rasterize(v1, v2, v3, solid.getShader());
         }

@@ -1,7 +1,6 @@
 package controller;
 
 
-import model.Vertex;
 import raster.ZBuffer;
 import rasterize.LineRasterizer;
 import rasterize.LineRasterizerTrivial;
@@ -9,8 +8,6 @@ import rasterize.TriangleRasterizer;
 import render.Renderer;
 import render.RendererSolid;
 import render.RendererWire;
-import shader.Shader;
-import shader.ShaderInterpolated;
 import shader.ShaderPhong;
 import shader.ShaderTexture;
 import solid.*;
@@ -259,6 +256,7 @@ public class Controller3D {
             } else {
                 rendererSolid.render(solid);
             }
+            solid.setShader(new  ShaderPhong(lightSource));
         }
 
 

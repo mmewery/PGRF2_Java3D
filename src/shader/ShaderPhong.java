@@ -21,9 +21,9 @@ public class ShaderPhong implements Shader {
         Col diffuseColor = pixel.getColor();
 
         Vec3D lightDir = new Vec3D(
-                lightPosition.getX() - pixel.getPosition().getX(),
-                lightPosition.getY() - pixel.getPosition().getY(),
-                lightPosition.getZ() - pixel.getPosition().getZ()
+                lightPosition.getX() - pixel.getViewPosition().getX(),
+                lightPosition.getY() - pixel.getViewPosition().getY(),
+                lightPosition.getZ() - pixel.getViewPosition().getZ()
         ).normalized().orElse(new Vec3D(0, 0, 1));
 
         Vec3D normal = pixel.getNormal().normalized().orElse(new Vec3D(0, 0, 1));
