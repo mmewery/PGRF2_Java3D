@@ -36,7 +36,7 @@ public class Controller3D {
     private final Renderer rendererSolid;
 
     // Solids
-    Solid axisX, axisY, axisZ, cube, sphere, cone, lightSource;
+    Solid axisX, axisY, axisZ, cube, sphere, cone, lightSource, arrow;
     private final List<Solid> solids = new ArrayList<>();
     private int activeSolidIndex = 0;
 
@@ -109,6 +109,10 @@ public class Controller3D {
         cone.setModel(new Mat4Transl(1.5, 1, -0.5));
         cone.setModel(new Mat4Scale(0.5).mul(cone.getModel()));
 
+        arrow = new Arrow();
+        arrow.setModel(new Mat4Transl(0, -0.5, 0));
+        arrow.setModel(new Mat4Scale(0.5).mul(arrow.getModel()));
+
         lightSource = new Sphere();
         lightSource.setModel(new Mat4Transl(1, 1, 4));
         lightSource.setModel(new Mat4Scale(0.2).mul(lightSource.getModel()));
@@ -117,6 +121,7 @@ public class Controller3D {
         solids.add(sphere);
         solids.add(cone);
         solids.add(lightSource);
+        solids.add(arrow);
 
 
         try {
