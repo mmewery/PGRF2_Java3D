@@ -46,32 +46,43 @@ public abstract class Renderer {
                 .mul(new Vec3D((width - 1) / 2.0, (height - 1) / 2.0, 1.0));
     }
     public void renderLine(Solid solid, int indexA, int indexB) {
-        Vertex vertexA = solid.getVertexBuffer().get(indexA);
-        Vertex vertexB = solid.getVertexBuffer().get(indexB);
+        Vertex vA = solid.getVertexBuffer().get(indexA);
+        Vertex vB = solid.getVertexBuffer().get(indexB);
 
-        Point3D pA = solid.getVertexBuffer().get(indexA).getPosition();
-        Point3D pB = solid.getVertexBuffer().get(indexB).getPosition();
+        Mat4 modelView = solid.getModel().mul(view);
+        vA = vA.transf(modelView).captureViewPos();
+        vB = vB.transf(modelView).captureViewPos();
 
-        // mvp transformace
-        Mat4 transform = solid.getModel().mul(view).mul(proj);
+        double zMin = 0;
 
-        pA = pA.mul(transform);
-        pB = pB.mul(transform);
+        if (vA.getPosition().getZ() > zMin && vB.getPosition().getZ() > zMin) {
+            return;
+        }
 
-        // orezani
-        if (pA.getW() < 0.1 || pB.getW() < 0.1) return;
+        if (vA.getPosition().getZ() > zMin) {
+            double t = (zMin - vA.getPosition().getZ()) / (vB.getPosition().getZ() - vA.getPosition().getZ());
+            vA = vertexLerp.lerp(vA, vB, t);
+        }
+        else if (vB.getPosition().getZ() > zMin) {
+            double t = (zMin - vA.getPosition().getZ()) / (vB.getPosition().getZ() - vA.getPosition().getZ());
+            vB = vertexLerp.lerp(vA, vB, t);
+        }
+
+        vA = vA.transfPosOnly(proj);
+        vB = vB.transfPosOnly(proj);
+
+        if (vA.getPosition().getW() < 0.1 || vB.getPosition().getW() < 0.1) return;
 
         // dehomog
-        Optional<Vec3D> dehomogA = pA.dehomog();
-        Optional<Vec3D> dehomogB = pB.dehomog();
+        Optional<Vec3D> dehomogA = vA.getPosition().dehomog();
+        Optional<Vec3D> dehomogB = vB.getPosition().dehomog();
 
         if (dehomogA.isPresent() && dehomogB.isPresent()) {
-            // transformace do okna
             Vec3D vecA = transformToWindow(dehomogA.get());
             Vec3D vecB = transformToWindow(dehomogB.get());
 
-            Vertex v1 = new Vertex(new Point3D(vecA), vertexA.getColor());
-            Vertex v2 = new Vertex(new Point3D(vecB), vertexB.getColor());
+            Vertex v1 = new Vertex(new Point3D(vecA), vA.getColor(), vA.getUv(), vA.getNormal());
+            Vertex v2 = new Vertex(new Point3D(vecB), vB.getColor(), vB.getUv(), vB.getNormal());
 
             lineRasterizer.rasterize(v1, v2);
         }
@@ -91,28 +102,27 @@ public abstract class Renderer {
         vB = vB.captureViewPos();
         vC = vC.captureViewPos();
 
-
-        double zMax = -0.1;
+        double zMix = 0;
 
         if (vA.getZ() > vB.getZ()) { Vertex temp = vA; vA = vB; vB = temp; }
         if (vA.getZ() > vC.getZ()) { Vertex temp = vA; vA = vC; vC = temp; }
         if (vB.getZ() > vC.getZ()) { Vertex temp = vB; vB = vC; vC = temp; }
 
-        if (vA.getZ() > zMax) {
+        if (vA.getZ() > zMix) {
             return;
         }
 
-        if (vB.getZ() > zMax) {
-            double tAB = (zMax - vA.getZ()) / (vB.getZ() - vA.getZ());
-            double tAC = (zMax - vA.getZ()) / (vC.getZ() - vA.getZ());
+        if (vB.getZ() > zMix) {
+            double tAB = (zMix - vA.getZ()) / (vB.getZ() - vA.getZ());
+            double tAC = (zMix - vA.getZ()) / (vC.getZ() - vA.getZ());
             vB = vertexLerp.lerp(vA, vB, tAB);
             vC = vertexLerp.lerp(vA, vC, tAC);
 
             drawTriangle(solid, vA, vB, vC);
         }
-        else if (vC.getZ() > zMax && vB.getZ() <= zMax) {
-            double tAC = (zMax - vA.getZ()) / (vC.getZ() - vA.getZ());
-            double tBC = (zMax - vB.getZ()) / (vC.getZ() - vB.getZ());
+        else if (vC.getZ() > zMix && vB.getZ() <= zMix) {
+            double tAC = (zMix - vA.getZ()) / (vC.getZ() - vA.getZ());
+            double tBC = (zMix - vB.getZ()) / (vC.getZ() - vB.getZ());
 
             Vertex vAC = vertexLerp.lerp(vA, vC, tAC);
             Vertex vBC = vertexLerp.lerp(vB, vC, tBC);

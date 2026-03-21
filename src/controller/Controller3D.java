@@ -98,15 +98,15 @@ public class Controller3D {
         axisZ = new AxisZ();
 
         cube = new Cube();
-        cube.setModel(new Mat4Transl(0, 1, 0));
+        cube.setModel(new Mat4Transl(0, 1.5, 0));
         cube.setModel(new Mat4Scale(0.5).mul(cube.getModel()));
 
         sphere = new Sphere();
-        sphere.setModel(new Mat4Transl(-1.5, 1, 0));
+        sphere.setModel(new Mat4Transl(-1.5, 1.5, 0));
         sphere.setModel(new Mat4Scale(0.5).mul(sphere.getModel()));
 
         cone = new Cone();
-        cone.setModel(new Mat4Transl(1.5, 1, -0.5));
+        cone.setModel(new Mat4Transl(1.5, 1.5, -0.5));
         cone.setModel(new Mat4Scale(0.5).mul(cone.getModel()));
 
         lightSource = new Sphere();
@@ -131,6 +131,9 @@ public class Controller3D {
         cube.setShader(new ShaderTexture(brick));
         sphere.setShader(new ShaderTexture(water));
         cone.setShader(new ShaderTexture(sandstone));
+        axisX.setShader(new ShaderConstant(new Col(0xff0000)));
+        axisY.setShader(new ShaderConstant(new Col(0x00ff00)));
+        axisZ.setShader(new ShaderConstant(new Col(0x0000ff)));
 
 
         initListeners();
@@ -295,9 +298,9 @@ public class Controller3D {
         rendererSolid.setView(camera.getViewMatrix());
         rendererSolid.setProj(proj);
 
-        rendererWire.render(axisX);
-        rendererWire.render(axisY);
-        rendererWire.render(axisZ);
+        rendererSolid.render(axisX);
+        rendererSolid.render(axisY);
+        rendererSolid.render(axisZ);
 
         for (Solid solid : solids) {
             if (isWireframe) {
