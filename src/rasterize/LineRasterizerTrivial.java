@@ -10,8 +10,6 @@ public class LineRasterizerTrivial extends LineRasterizer {
         super(zBuffer);
     }
 
-
-
     @Override
     public void rasterize(Vertex a, Vertex b) {
         double x1 = a.getX();

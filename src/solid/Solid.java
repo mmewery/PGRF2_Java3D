@@ -4,6 +4,7 @@ import model.SolidPart;
 import model.Vertex;
 import shader.Shader;
 import shader.ShaderConstant;
+import transforms.Col;
 import transforms.Mat4;
 import transforms.Mat4Identity;
 
@@ -16,7 +17,7 @@ public abstract class Solid {
     protected final List<Integer> indexBuffer = new ArrayList<>();
     protected final List<SolidPart> partBuffer = new ArrayList<>();
     protected Mat4 model = new Mat4Identity();
-    protected Shader shader = new ShaderConstant();
+    protected Shader shader = new ShaderConstant(new Col(0xffffff));
 
     public Shader getShader() {
         return shader;

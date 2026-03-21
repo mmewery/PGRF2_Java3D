@@ -5,7 +5,7 @@ import transforms.Col;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
-import java.util.OptionalInt;
+
 
 public class RasterBufferedImage implements Raster<Col>{
 

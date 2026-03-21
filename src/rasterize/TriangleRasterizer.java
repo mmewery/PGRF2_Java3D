@@ -1,12 +1,8 @@
 package rasterize;
 
 import model.Vertex;
-import raster.RasterBufferedImage;
 import raster.ZBuffer;
 import shader.Shader;
-import shader.ShaderConstant;
-import shader.ShaderInterpolated;
-import transforms.Col;
 import util.Lerp;
 
 public class TriangleRasterizer {
@@ -35,18 +31,9 @@ public class TriangleRasterizer {
             c = temp;
         }
 
-        int ax = (int)Math.round(a.getX());
         int ay = (int)Math.round(a.getY());
-        double az = a.getZ();
-
-        int bx = (int)Math.round(b.getX());
         int by = (int)Math.round(b.getY());
-        double bz = b.getZ();
-
-        int cx = (int)Math.round(c.getX());
         int cy = (int)Math.round(c.getY());
-        double cz = c.getZ();
-
 
         // 1. cast trojuhelniku
         for(int y = ay; y < by; y++){

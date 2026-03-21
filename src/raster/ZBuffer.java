@@ -2,7 +2,6 @@ package raster;
 
 import transforms.Col;
 
-import java.util.Optional;
 
 public class ZBuffer {
     private final Raster<Col> imageBuffer;
@@ -19,7 +18,7 @@ public class ZBuffer {
         }
         if(depthBuffer.getValue(x, y).isPresent() && z <= depthBuffer.getValue(x, y).get()){
             imageBuffer.setValue(x, y, col);
-            depthBuffer.setValue(x, y, Double.valueOf(z));
+            depthBuffer.setValue(x, y, z);
         }
     }
     public void clear() {

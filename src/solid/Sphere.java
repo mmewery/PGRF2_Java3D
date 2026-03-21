@@ -29,7 +29,7 @@ public class Sphere extends Solid {
 
                 Vec3D normal = new Vec3D(x, y, z).normalized().orElse(new Vec3D(0, 0, 1));
 
-                vertexBuffer.add(new Vertex(new Point3D(x, y, z), new Col(0xffffff), new Vec2D(u, v), normal));
+                vertexBuffer.add(new Vertex(new Point3D(x, y, z), new Col(u, u, 255), new Vec2D(u, v), normal));
             }
         }
 

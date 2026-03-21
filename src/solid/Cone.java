@@ -33,7 +33,7 @@ public class Cone extends Solid {
             double u = (Math.cos(theta) + 1.0) / 2.0;
             double v = (Math.sin(theta) + 1.0) / 2.0;
 
-            vertexBuffer.add(new Vertex(new Point3D(x, y, 0), new Col(0xdddddd), new Vec2D(u, v), normal));
+            vertexBuffer.add(new Vertex(new Point3D(x, y, 0), new Col(v, 100, 255), new Vec2D(u, v), normal));
         }
 
         for (int i = 0; i < slices; i++) {

@@ -31,48 +31,9 @@ public abstract class Renderer {
 
     public void render(Solid solid){}
 
-    public LineRasterizer getLineRasterizer() {
-        return lineRasterizer;
-    }
-
-    public void setLineRasterizer(LineRasterizer lineRasterizer) {
-        this.lineRasterizer = lineRasterizer;
-    }
-
-    public TriangleRasterizer getTriangleRasterizer() {
-        return triangleRasterizer;
-    }
-
-    public void setTriangleRasterizer(TriangleRasterizer triangleRasterizer) {
-        this.triangleRasterizer = triangleRasterizer;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public Mat4 getView() {
-        return view;
-    }
 
     public void setView(Mat4 view) {
         this.view = view;
-    }
-
-    public Mat4 getProj() {
-        return proj;
     }
 
     public void setProj(Mat4 proj) {
@@ -120,13 +81,12 @@ public abstract class Renderer {
         Vertex vB = solid.getVertexBuffer().get(indexB);
         Vertex vC = solid.getVertexBuffer().get(indexC);
 
-        // 1. Aplikace Model a View transformace přímo na celý vertex!
+        //aplikace Model a View cely vertex
         Mat4 modelView = solid.getModel().mul(view);
         vA = vA.transf(modelView);
         vB = vB.transf(modelView);
         vC = vC.transf(modelView);
 
-        // 2. Zachytíme si View pozici (protože teď jsme v 3D prostoru vůči kameře)
         vA = vA.captureViewPos();
         vB = vB.captureViewPos();
         vC = vC.captureViewPos();
@@ -165,12 +125,12 @@ public abstract class Renderer {
         }
     }
     private void drawTriangle(Solid solid, Vertex vA, Vertex vB, Vertex vC) {
-        // 3. Aplikace Projekční matice pouze na zobrazovací souřadnice
+        // proj matice na zobrazovací souřadnice
         vA = vA.transfPosOnly(proj);
         vB = vB.transfPosOnly(proj);
         vC = vC.transfPosOnly(proj);
 
-        // Ořezání W
+        // Clip W
         if (vA.getPosition().getW() < 0.1 || vB.getPosition().getW() < 0.1 || vC.getPosition().getW() < 0.1) return;
 
         // Dehomogenizace
@@ -183,7 +143,6 @@ public abstract class Renderer {
             Vec3D vecB = transformToWindow(dehomogB.get());
             Vec3D vecC = transformToWindow(dehomogC.get());
 
-            // Finální vertexy předané do rasterizéru! Mají 2D pozici, ale pamatují si 3D ViewPos a Normálu!
             Vertex v1 = new Vertex(new Point3D(vecA), vA.getViewPosition(), vA.getColor(), vA.getUv(), vA.getNormal());
             Vertex v2 = new Vertex(new Point3D(vecB), vB.getViewPosition(), vB.getColor(), vB.getUv(), vB.getNormal());
             Vertex v3 = new Vertex(new Point3D(vecC), vC.getViewPosition(), vC.getColor(), vC.getUv(), vC.getNormal());

@@ -8,6 +8,8 @@ import rasterize.TriangleRasterizer;
 import render.Renderer;
 import render.RendererSolid;
 import render.RendererWire;
+import shader.ShaderConstant;
+import shader.ShaderInterpolated;
 import shader.ShaderPhong;
 import shader.ShaderTexture;
 import solid.*;
@@ -29,9 +31,6 @@ public class Controller3D {
 
     private final Panel panel;
     private final ZBuffer zBuffer;
-    // Rasterizers
-    private final LineRasterizer lineRasterizer;
-    private final TriangleRasterizer triangleRasterizer;
     // Renderers
     private final Renderer rendererWire;
     private final Renderer rendererSolid;
@@ -49,13 +48,19 @@ public class Controller3D {
     private boolean isOrth = false;
     private boolean isWireframe = false;
 
-    private final BufferedImage texture;
+    private final BufferedImage sandstone;
+    private final BufferedImage brick;
+    private final BufferedImage water;
+
+    private Col lightColor = new Col(255, 0, 0);
+    private int lightColorInt;
 
     public Controller3D(Panel panel) {
         this.panel = panel;
         this.zBuffer = new ZBuffer(panel.getRaster());
-        this.lineRasterizer = new LineRasterizerTrivial(zBuffer);
-        this.triangleRasterizer = new TriangleRasterizer(zBuffer);
+        // Rasterizers
+        LineRasterizer lineRasterizer = new LineRasterizerTrivial(zBuffer);
+        TriangleRasterizer triangleRasterizer = new TriangleRasterizer(zBuffer);
 
 
         this.camera = new Camera()
@@ -93,16 +98,16 @@ public class Controller3D {
         axisZ = new AxisZ();
 
         cube = new Cube();
-        cube.setModel(new Mat4Transl(1.5, 0, 0));
-        cube.setModel(new Mat4Scale(0.8).mul(cube.getModel()));
+        cube.setModel(new Mat4Transl(0, 1, 0));
+        cube.setModel(new Mat4Scale(0.5).mul(cube.getModel()));
 
         sphere = new Sphere();
-        sphere.setModel(new Mat4Transl(-1.5, 0, 0));
-        sphere.setModel(new Mat4Scale(0.8).mul(sphere.getModel()));
+        sphere.setModel(new Mat4Transl(-1.5, 1, 0));
+        sphere.setModel(new Mat4Scale(0.5).mul(sphere.getModel()));
 
         cone = new Cone();
-        cone.setModel(new Mat4Transl(2.5, 0, 0));
-        cone.setModel(new Mat4Scale(0.8).mul(cone.getModel()));
+        cone.setModel(new Mat4Transl(1.5, 1, -0.5));
+        cone.setModel(new Mat4Scale(0.5).mul(cone.getModel()));
 
         lightSource = new Sphere();
         lightSource.setModel(new Mat4Transl(1, 1, 4));
@@ -115,13 +120,18 @@ public class Controller3D {
 
 
         try {
-            texture = ImageIO.read(new File("./res/textures/images.jpg"));
+            sandstone = ImageIO.read(new File("./res/textures/sandstone" + ".jpg"));
+            brick = ImageIO.read(new File("./res/textures/brick" + ".jpg"));
+            water = ImageIO.read(new File("./res/textures/water" + ".jpg"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        for (Solid solid : solids) {
-            solid.setShader(new ShaderTexture(texture));
-        }
+
+        lightSource.setShader(new ShaderConstant(lightColor));
+        cube.setShader(new ShaderTexture(brick));
+        sphere.setShader(new ShaderTexture(water));
+        cone.setShader(new ShaderTexture(sandstone));
+
 
         initListeners();
 
@@ -165,10 +175,6 @@ public class Controller3D {
                     if (activeSolidIndex >= solids.size()) {
                         activeSolidIndex = 0;
                     }
-//                    for(Solid solid : solids) {
-//                        Solid.setColor(new Col(0xffffff));
-//                    }
-//                    solids.get(activeSolidIndex).setColor(new Col(0x00ffff));
                 }
 
                 //translace
@@ -229,8 +235,43 @@ public class Controller3D {
                     isWireframe = !isWireframe;
                 }
 
-                if(e.getKeyCode() == KeyEvent.VK_T){
-                    solids.get(activeSolidIndex).setShader(new ShaderPhong(lightSource));
+                if (e.getKeyCode() == KeyEvent.VK_T) {
+                    Solid activeSolid = solids.get(activeSolidIndex);
+
+                    if (activeSolid != lightSource) {
+                        if (activeSolid.getShader() instanceof ShaderTexture) {
+                            activeSolid.setShader(new ShaderPhong());
+                        }
+                        else if (activeSolid.getShader() instanceof ShaderPhong) {
+                            activeSolid.setShader(new ShaderInterpolated());
+                        }
+                        else {
+                            if (activeSolid instanceof Sphere)
+                                activeSolid.setShader(new ShaderTexture(water));
+                            else if (activeSolid instanceof Cone)
+                                activeSolid.setShader(new ShaderTexture(sandstone));
+                            else
+                                activeSolid.setShader(new ShaderTexture(brick));
+                        }
+                    }
+                    else{
+                        lightColorInt++;
+                        if (lightColorInt >= 3) {
+                            lightColorInt = 0;
+                        }
+                        switch (lightColorInt) {
+                            case 0:
+                                lightColor = new Col(255, 0, 0);
+                                break;
+                            case 1:
+                                lightColor = new Col(0, 255, 0);
+                                break;
+                            case 2:
+                            lightColor = new Col(0, 0, 255);
+                            break;
+                        }
+                        lightSource.setShader(new ShaderConstant(lightColor));
+                    }
                 }
                 drawScene();
             }
@@ -241,6 +282,14 @@ public class Controller3D {
         panel.getRaster().clear();
         zBuffer.clear();
 
+        Point3D currentLightPos = new Point3D(0, 0, 0).mul(lightSource.getModel());
+        Mat4 currentView = camera.getViewMatrix();
+
+        for (Solid solid : solids) {
+            if (solid.getShader() instanceof ShaderPhong) {
+                ((ShaderPhong) solid.getShader()).updateLight(currentLightPos, currentView, lightColor);
+            }
+        }
         rendererWire.setView(camera.getViewMatrix());
         rendererWire.setProj(proj);
         rendererSolid.setView(camera.getViewMatrix());
@@ -255,8 +304,10 @@ public class Controller3D {
                 rendererWire.render(solid);
             } else {
                 rendererSolid.render(solid);
+                if (solids.indexOf(solid) == activeSolidIndex) {
+                    rendererWire.render(solid);
+                }
             }
-            solid.setShader(new  ShaderPhong(lightSource));
         }
 
 

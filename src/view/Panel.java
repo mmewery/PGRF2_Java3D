@@ -9,8 +9,6 @@ public class Panel extends JPanel {
 
     private final RasterBufferedImage raster;
 
-    //private String editModeText = "FALSE";
-
 
     public Panel(int width, int height) {
         setPreferredSize(new Dimension(width, height));
@@ -22,15 +20,9 @@ public class Panel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.drawImage(raster.getImage(), 0, 0, null);
-
-        //g.drawString("EDIT MODE: " + editModeText, 20, 50);
     }
 
     public RasterBufferedImage getRaster() {
         return raster;
     }
-
-//    public void setEditModeText(String text) {
-//        this.editModeText = text;
-//    }
 }

@@ -1,29 +1,35 @@
 package shader;
 
 import model.Vertex;
-import solid.Solid;
 import transforms.Col;
+import transforms.Mat4;
 import transforms.Point3D;
 import transforms.Vec3D;
 
 public class ShaderPhong implements Shader {
 
-    private final Point3D lightPosition;
-    private final Col ambientColor;
+    private Point3D lightPosViewSpace;
+    private Col ambientColor;
+    private Col diffuseColor;
 
-    public ShaderPhong(Solid lightSource) {
-        this.lightPosition = new Point3D(lightSource.getModel().getTranslate());
-        this.ambientColor = new Col(0.2, 0.2, 0.2);
+    public ShaderPhong() {
+    }
+
+    public void updateLight(Point3D lightPosWorld, Mat4 viewMatrix, Col lightColor) {
+        this.lightPosViewSpace = lightPosWorld.mul(viewMatrix);
+        this.diffuseColor = lightColor;
+        this.ambientColor = new Col(20, 0, 20);
     }
 
     @Override
     public Col getColor(Vertex pixel) {
-        Col diffuseColor = pixel.getColor();
+
+        if (lightPosViewSpace == null) return diffuseColor;
 
         Vec3D lightDir = new Vec3D(
-                lightPosition.getX() - pixel.getViewPosition().getX(),
-                lightPosition.getY() - pixel.getViewPosition().getY(),
-                lightPosition.getZ() - pixel.getViewPosition().getZ()
+                lightPosViewSpace.getX() - pixel.getViewPosition().getX(),
+                lightPosViewSpace.getY() - pixel.getViewPosition().getY(),
+                lightPosViewSpace.getZ() - pixel.getViewPosition().getZ()
         ).normalized().orElse(new Vec3D(0, 0, 1));
 
         Vec3D normal = pixel.getNormal().normalized().orElse(new Vec3D(0, 0, 1));
